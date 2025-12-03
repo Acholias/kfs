@@ -38,27 +38,28 @@ $(ISO): $(KERNEL)
 	@grub-mkrescue -o $(ISO) $(ISO_DIR) 2>/dev/null \
 	  || grub2-mkrescue -o $(ISO) $(ISO_DIR)
 
-	@echo "ISO créée : $(ISO)"
+	@echo -e "\033[32mISO créée : $(ISO)\033[0m"
 
 $(KERNEL): $(OBJECTS)
 	@mkdir -p $(BUILD_DIR)
-	$(LD) $(LDFLAGS) -o $@ $^
-	@echo "Kernel compilé : $(KERNEL)"
+	@$(LD) $(LDFLAGS) -o $@ $^
+	@echo -e "\033[32mKernel compilé : $(KERNEL)\033[0m"
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.asm
 	@mkdir -p $(BUILD_DIR)
-	$(ASM) $(ASMFLAGS) $< -o $@
+	@$(ASM) $(ASMFLAGS) $< -o $@
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
 
 run: $(ISO)
 	qemu-system-i386 -cdrom $(ISO)
 
-clean:
-	rm -rf $(BUILD_DIR) $(ISO_DIR) $(ISO)
+fclean:
+	@rm -rf $(BUILD_DIR) $(ISO_DIR) $(ISO)
+	@echo -e "\033[31mFiles and folder : $(BUILD_DIR) $(ISO_DIR) $(ISO) deleted\033[0m"
 
-re: clean all
+re: fclean all
 
-.PHONY: all clean re run
+.PHONY: all fclean re run

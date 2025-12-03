@@ -1,5 +1,6 @@
 #include "../includes/stdbool.h"
 #include "../includes/types.h"
+#include "../includes/io.h"
 
 #if defined(__LINUX__)
 #error "You are not using a cross-compiler, you will most certainly run into trouble"
@@ -58,7 +59,7 @@ void	terminal_initialize()
 {
 	terminal_row = 0;
 	terminal_column = 0;
-	terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
+	terminal_color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);
 
 	size_t	y = 0;
 	while (y < VGA_HEIGHT)
@@ -107,8 +108,20 @@ void	terminal_write_string(const char *data)
 	terminal_write(data, strlen(data));
 }
 
+void	change_cursor_place(u16 row, u16 col)
+{
+	u16	pos = row * 80 + col;
+
+	outb(0x3D4, 0x0F);
+	outb(0x3D5, pos & 0xFF);
+	
+	outb(0x3D4, 0x0E);
+    outb(0x3D5, (pos >> 8) & 0xFF);
+}
+
 void	kernel_main(void)
 {
 	terminal_initialize();
+	change_cursor_place(10, 10);
 	terminal_write_string("42");
 }
