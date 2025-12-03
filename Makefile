@@ -29,8 +29,6 @@ $(ISO): $(KERNEL)
 	@mkdir -p $(GRUB_DIR)
 	@cp $(KERNEL) $(BOOT_DIR)/kernel.bin
 
-	@echo 'set timeout=0' > $(GRUB_DIR)/grub.cfg
-	@echo 'set default=0' >> $(GRUB_DIR)/grub.cfg
 	@echo '' >> $(GRUB_DIR)/grub.cfg
 	@echo 'menuentry "KFS-1" {' >> $(GRUB_DIR)/grub.cfg
 	@echo '    multiboot /boot/kernel.bin' >> $(GRUB_DIR)/grub.cfg
