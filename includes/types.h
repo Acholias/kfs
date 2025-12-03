@@ -11,4 +11,6 @@ typedef char		i8;
 typedef short		i16;
 typedef int			i32;
 
+# define	NULL	(void *)0
+
 #endif
