@@ -1,49 +1,80 @@
-# Bootloader ASM (boot.asm)
+# 🔧 Fonctions Assembleur - KFS-1
 
-Ce fichier contient le point d’entrée de notre kernel ainsi que le **header Multiboot** compatible avec GRUB.
-Il prépare également la **pile (stack)** et transfère ensuite l’exécution à la fonction `kernel_main()` du noyau C.
-
-Cette implémentation suit principalement la documentation *Multiboot Specification* ainsi que le tutoriel **Bare Bones** d’OSDev.
+Ce document explique en détail les différentes fonctions assembleur utilisées dans le projet KFS-1. Ces fonctions constituent la base bas-niveau du kernel et permettent l'interface entre le bootloader, le matériel et le code C.
 
 ---
 
-## 📌 1. Mode 32 bits
+## 📋 Table des matières
+1. [Bootloader (boot.asm)](#1-bootloader-bootasm)
+2. [ft_memcpy](#2-ft_memcpy)
+3. [ft_strlen](#3-ft_strlen)
 
+---
+
+## 1. Bootloader (boot.asm)
+
+### 📌 Vue d'ensemble
+Le bootloader est le point d'entrée de notre kernel. Il contient le **header Multiboot** compatible avec GRUB et initialise l'environnement d'exécution avant de transférer le contrôle au code C.
+
+### 🔍 Code complet
+```asm
+BITS 32
+extern kernel_main
+
+%define ALIGN      (1 << 0)
+%define MEMINFO    (1 << 1)
+%define FLAGS      (ALIGN | MEMINFO)
+%define MAGIC      0x1BADB002
+%define CHECKSUM   -(MAGIC + FLAGS)
+
+section .multiboot
+align 4
+    dd MAGIC
+    dd FLAGS
+    dd CHECKSUM
+
+section .bss
+align 16
+stack_bottom:
+    resb 16384
+stack_top:
+
+section .text
+global _start
+_start:
+    mov     esp, stack_top
+    call    kernel_main
+    cli
+.hang:
+    hlt
+    jmp     .hang
+```
+
+### 📖 Explication détaillée
+
+#### Mode 32 bits
 ```asm
 BITS 32
 ```
+Notre kernel s'exécute en **mode protégé 32 bits**. GRUB configure déjà le CPU dans ce mode avant de transférer le contrôle.
 
-Notre kernel est conçu pour être exécuté directement en **mode protégé 32 bits**, car GRUB configure déjà la machine dans ce mode avant de transférer le contrôle au kernel.
-
----
-
-## 📌 2. Header Multiboot
-
-Pour que GRUB reconnaisse et charge correctement notre kernel, nous devons fournir un **header Multiboot** contenant :
-
-* une valeur magique (`MAGIC`) que GRUB recherche,
-* des flags indiquant nos besoins,
-* un checksum permettant la validation du header.
-
+#### Header Multiboot
 ```asm
-%define ALIGN      (1 << 0)      ; Demande un alignement du module sur 4 octets
-%define MEMINFO    (1 << 1)      ; Demande à GRUB de passer les informations mémoire
-%define FLAGS      (ALIGN | MEMINFO)
-
 %define MAGIC      0x1BADB002    ; Signature Multiboot obligatoire
+%define FLAGS      (ALIGN | MEMINFO)
 %define CHECKSUM   -(MAGIC + FLAGS)
 ```
 
-Les trois valeurs doivent satisfaire :
-
+Le header Multiboot permet à GRUB de reconnaître notre kernel. Il doit satisfaire :
 ```
-MAGIC + FLAGS + CHECKSUM ≡ 0 (mod 2^32)
+MAGIC + FLAGS + CHECKSUM ≡ 0 (mod 2³²)
 ```
 
----
+**Flags utilisés :**
+- `ALIGN (1 << 0)` : Demande l'alignement des modules sur 4 octets
+- `MEMINFO (1 << 1)` : GRUB fournit les informations sur la mémoire disponible
 
-## 📌 3. Section Multiboot
-
+#### Section Multiboot
 ```asm
 section .multiboot
 align 4
@@ -52,90 +83,312 @@ align 4
     dd CHECKSUM
 ```
 
-Le header doit être :
+Cette section doit être :
+- Placée dans les **8 premiers Ko** du fichier binaire
+- **Alignée sur 4 octets**
 
-* placé dans les **8 premiers Ko** du fichier binaire,
-* **aligné sur 4 octets**.
+GRUB scanne cette zone pour valider le kernel.
 
-GRUB lit cette section pour vérifier que le kernel est bien conforme à la spécification Multiboot.
-
----
-
-## 📌 4. Création de la stack (pile)
-
+#### Création de la pile (stack)
 ```asm
 section .bss
 align 16
 stack_bottom:
-    resb 16384        ; Réserve 16 KB pour la pile
+    resb 16384        ; Réserve 16 KB
 stack_top:
 ```
 
-La section **.bss** contient des données non initialisées.
-Ici, nous réservons **16 KB de mémoire** pour servir de pile (stack).
+La section `.bss` contient les données non initialisées. Nous réservons **16 KB** pour la pile.
 
-Important :
-La pile **descend**, donc `ESP` doit commencer à `stack_top`.
+**⚠️ Important :** La pile descend en mémoire, donc `ESP` pointe vers `stack_top`.
+
+#### Point d'entrée
+```asm
+_start:
+    mov     esp, stack_top    ; Initialise le pointeur de pile
+    call    kernel_main       ; Appelle la fonction C principale
+```
+
+1. `ESP` est positionné au sommet de la pile
+2. On appelle `kernel_main()` qui contient la logique du noyau en C
+
+#### Boucle d'arrêt (fail-safe)
+```asm
+    cli                ; Désactive les interruptions
+.hang:
+    hlt                ; Met le CPU en pause
+    jmp     .hang      ; Boucle infinie
+```
+
+Si `kernel_main()` retourne (ce qui ne devrait jamais arriver), le CPU :
+- Désactive les interruptions (`cli`)
+- Se met en pause (`hlt`)
+- Reste bloqué dans une boucle infinie
+
+Cela évite l'exécution d'instructions invalides.
 
 ---
 
-## 📌 5. Point d’entrée du kernel
+## 2. ft_memcpy
 
+### 📌 Prototype
+```c
+void *ft_memcpy(void *dest, const void *src, size_t n);
+```
+
+### 🎯 Fonction
+Copie `n` octets depuis `src` vers `dest`. Retourne `dest`.
+
+### 🔍 Code complet
 ```asm
 section .text
-global _start
-_start:
-    mov esp, stack_top
-    call kernel_main
+    global ft_memcpy
+
+ft_memcpy:
+    push    ebp                ; Sauvegarde le base pointer
+    mov     ebp, esp           ; Établit le stack frame
+    push    esi                ; Sauvegarde esi
+    push    edi                ; Sauvegarde edi
+    
+    mov     edi, [ebp + 8]     ; edi = dest
+    mov     esi, [ebp + 12]    ; esi = src
+    mov     ecx, [ebp + 16]    ; ecx = n
+    
+    mov     eax, edi           ; Sauvegarde dest pour le retour
+    cmp     ecx, 0             ; Si n == 0
+    je      .end               ; Quitter directement
+    
+.loop:
+    mov     bl, [esi]          ; Lire 1 octet depuis src
+    mov     [edi], bl          ; Écrire dans dest
+    inc     esi                ; src++
+    inc     edi                ; dest++
+    dec     ecx                ; n--
+    jnz     .loop              ; Continuer si ecx != 0
+    
+.end:
+    pop     edi                ; Restaure edi
+    pop     esi                ; Restaure esi
+    pop     ebp                ; Restaure ebp
+    ret                        ; Retourne (eax contient dest)
 ```
 
-### `_start` est le véritable point d’entrée du kernel
+### 📖 Explication détaillée
 
-Après avoir chargé le fichier ELF, **GRUB saute directement à `_start`**.
+#### Setup du stack frame
+```asm
+push    ebp
+mov     ebp, esp
+push    esi
+push    edi
+```
+- Sauvegarde de `ebp` pour restaurer l'état précédent
+- `ebp` devient le nouveau point de référence pour accéder aux paramètres
+- Sauvegarde de `esi` et `edi` car nous allons les modifier
 
-### Initialisation de la pile
+#### Récupération des paramètres
+```asm
+mov     edi, [ebp + 8]     ; Premier paramètre : dest
+mov     esi, [ebp + 12]    ; Deuxième paramètre : src
+mov     ecx, [ebp + 16]    ; Troisième paramètre : n
+```
 
-On positionne le registre `ESP` en haut de la pile (`stack_top`).
+**Organisation de la pile :**
+```
+[ebp + 16]  →  n (size_t)
+[ebp + 12]  →  src (const void*)
+[ebp + 8]   →  dest (void*)
+[ebp + 4]   →  Adresse de retour
+[ebp]       →  Ancien ebp
+```
 
-### Appel du kernel C
+#### Préparation du retour
+```asm
+mov     eax, edi           ; Sauvegarde dest
+cmp     ecx, 0             ; Vérifie si n == 0
+je      .end               ; Si oui, termine
+```
+`eax` contiendra la valeur de retour (convention x86 : retour dans `eax`).
 
-`kernel_main()` est la fonction principale écrite en C qui contiendra la logique du noyau.
+#### Boucle de copie
+```asm
+.loop:
+    mov     bl, [esi]      ; Charge 1 octet de [esi] dans bl
+    mov     [edi], bl      ; Écrit bl dans [edi]
+    inc     esi            ; src++
+    inc     edi            ; dest++
+    dec     ecx            ; n--
+    jnz     .loop          ; Si ecx != 0, continue
+```
+
+Équivalent C :
+```c
+while (n > 0) {
+    *dest = *src;
+    dest++;
+    src++;
+    n--;
+}
+```
+
+#### Nettoyage et retour
+```asm
+.end:
+    pop     edi
+    pop     esi
+    pop     ebp
+    ret
+```
+Restaure l'état des registres et retourne (la valeur dans `eax` est automatiquement retournée).
+
+### 💡 Utilisation
+Cette fonction est utilisée dans `terminal_scroll()` pour copier efficacement les lignes VGA :
+```c
+ft_memcpy((void*)terminal_buffer, 
+          (void*)(terminal_buffer + VGA_WIDTH), 
+          (VGA_HEIGHT - 1) * VGA_WIDTH * sizeof(u16));
+```
 
 ---
 
-## 📌 6. Boucle d’arrêt (sécurité)
+## 3. ft_strlen
 
-```asm
-.hang:
-    cli
-    hlt
-    jmp .hang
+### 📌 Prototype
+```c
+size_t ft_strlen(const char *s);
 ```
 
-Cette boucle infinie sert de **fail-safe**.
-Si jamais `kernel_main()` retournait (ce qui ne devrait jamais arriver dans un OS), le CPU :
+### 🎯 Fonction
+Calcule la longueur d'une chaîne de caractères (nombre de caractères avant `\0`).
 
-* désactive les interruptions (`cli`),
-* se met en pause (`hlt`),
-* et reste bloqué dans cette boucle.
+### 🔍 Code complet
+```asm
+global  ft_strlen
 
-Ce comportement évite l’exécution d’instructions invalides et permet un arrêt propre.
+ft_strlen:
+    push    ebp                ; Sauvegarde le base pointer
+    mov     ebp, esp           ; Établit le stack frame
+    mov     eax, 0             ; Compteur = 0
+    mov     edi, [ebp + 8]     ; edi = pointeur sur la chaîne
+    
+.loop:
+    cmp     byte [edi + eax], 0  ; Compare avec '\0'
+    je      .end                 ; Si '\0', termine
+    inc     eax                  ; Compteur++
+    jmp     .loop                ; Continue
+    
+.end:
+    pop     ebp                ; Restaure ebp
+    ret                        ; Retourne (eax contient la longueur)
+```
+
+### 📖 Explication détaillée
+
+#### Setup et initialisation
+```asm
+push    ebp
+mov     ebp, esp
+mov     eax, 0             ; Le compteur commence à 0
+mov     edi, [ebp + 8]     ; edi = paramètre 's'
+```
+
+`eax` servira de compteur et contiendra la valeur de retour.
+
+#### Boucle de comptage
+```asm
+.loop:
+    cmp     byte [edi + eax], 0  ; Compare l'octet à l'index eax avec 0
+    je      .end                 ; Si c'est '\0', on a fini
+    inc     eax                  ; Sinon, on incrémente le compteur
+    jmp     .loop                ; Et on continue
+```
+
+**Détail de `byte [edi + eax]` :**
+- `edi` contient l'adresse de base de la chaîne
+- `eax` est l'index courant
+- `byte` indique qu'on lit 1 octet
+- On accède donc à `s[eax]`
+
+Équivalent C :
+```c
+size_t len = 0;
+while (s[len] != '\0') {
+    len++;
+}
+return len;
+```
+
+#### Retour
+```asm
+.end:
+    pop     ebp
+    ret
+```
+La valeur dans `eax` (le compteur) est automatiquement retournée.
+
+### 💡 Utilisation
+Cette fonction est utilisée partout où on a besoin de connaître la longueur d'une chaîne :
+```c
+void terminal_write_string(const char *data)
+{
+    terminal_write(data, ft_strlen(data));
+}
+```
 
 ---
 
 ## 📚 Ressources
 
-* **OSDev – Bare Bones**
+### Documentation officielle
+- **OSDev – Bare Bones**  
   [https://wiki.osdev.org/Bare_Bones](https://wiki.osdev.org/Bare_Bones)
 
-* **Osdev - Inline_Assembly
-    https://wiki.osdev.org/Inline_Assembly/Examples#I.2FO_access
+- **OSDev – Inline Assembly**  
+  [https://wiki.osdev.org/Inline_Assembly/Examples](https://wiki.osdev.org/Inline_Assembly/Examples)
+
+- **Multiboot Specification**  
+  [https://www.gnu.org/software/grub/manual/multiboot/multiboot.html](https://www.gnu.org/software/grub/manual/multiboot/multiboot.html)
+
+### Tutoriels assembleur x86
+- **x86 Assembly Guide (Yale)**  
+  [https://flint.cs.yale.edu/cs421/papers/x86-asm/asm.html](https://flint.cs.yale.edu/cs421/papers/x86-asm/asm.html)
+
+- **Intel 80386 Programmer's Reference**  
+  [https://pdos.csail.mit.edu/6.828/2018/readings/i386.pdf](https://pdos.csail.mit.edu/6.828/2018/readings/i386.pdf)
 
 ---
 
-Ce fichier constitue la toute première étape du boot :
-✔ Déclarer un header Multiboot
-✔ Initialiser la stack
-✔ Transférer le contrôle au kernel C
+## 🎯 Points clés à retenir
 
-Il travaille de pair avec le linker et la partie C du noyau, présentés dans les sections suivantes du projet.
+### Conventions d'appel x86 (cdecl)
+1. **Paramètres** : Passés sur la pile (de droite à gauche)
+2. **Valeur de retour** : Dans le registre `eax`
+3. **Registres à sauvegarder** : `ebx`, `esi`, `edi`, `ebp`
+4. **Nettoyage de la pile** : Fait par l'appelant
+
+### Organisation de la pile
+```
+[ebp + 16]  →  3ème paramètre
+[ebp + 12]  →  2ème paramètre
+[ebp + 8]   →  1er paramètre
+[ebp + 4]   →  Adresse de retour
+[ebp]       →  Ancien ebp (sauvegardé)
+[ebp - 4]   →  Variables locales...
+```
+
+### Registres importants
+- **EAX** : Valeur de retour, registre général
+- **EBX, ECX, EDX** : Registres généraux
+- **ESI** : Source index (source pour les opérations sur chaînes)
+- **EDI** : Destination index (destination pour les opérations sur chaînes)
+- **EBP** : Base pointer (référence pour les variables locales)
+- **ESP** : Stack pointer (sommet de la pile)
+
+---
+
+Ces fonctions constituent la fondation bas-niveau du kernel KFS-1, permettant :
+- ✅ Le boot et l'initialisation du système
+- ✅ Les opérations mémoire optimisées
+- ✅ Les utilitaires de manipulation de chaînes
+
+Elles travaillent en synergie avec le code C pour créer un kernel fonctionnel.
