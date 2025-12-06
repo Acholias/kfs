@@ -10,8 +10,10 @@
 #define VGA_WIDTH   80
 #define VGA_HEIGHT  25
 #define VGA_MEMORY  0xB8000 
+#define PROMPT_LENGTH 9
 
-extern size_t	ft_strlen(const char *str);
+extern	size_t		ft_strlen(const char *str);
+extern	void		*ft_memcpy(void *dest, const void *src, size_t n);
 
 enum vga_color
 {
@@ -90,6 +92,21 @@ void	terminal_putentry(char c, u8 color, size_t x, size_t y)
 	terminal_buffer[index] =vga_entry(c, color);
 }
 
+void	terminal_scroll()
+{
+	size_t	bytes_copy = (VGA_HEIGHT - 1) * VGA_WIDTH * sizeof(u16);	
+	ft_memcpy((void*)terminal_buffer, (void*)(terminal_buffer + VGA_WIDTH), bytes_copy);
+
+	size_t	x = 0;
+	while (x < VGA_WIDTH)
+	{
+		size_t	index = (VGA_HEIGHT - 1) * VGA_WIDTH + x;
+		terminal_buffer[index] = vga_entry(' ', terminal_color);
+		++x;
+	}
+	terminal_row = VGA_HEIGHT - 1;
+	terminal_column = 0;
+}
 
 void	terminal_putchar(char c)
 {
@@ -97,6 +114,11 @@ void	terminal_putchar(char c)
 	{
 		terminal_row++;
 		terminal_column = 0;
+
+
+		if (terminal_row >= VGA_HEIGHT)
+			terminal_scroll();
+	
 		print_prompt();
 	}
 	else
@@ -107,7 +129,7 @@ void	terminal_putchar(char c)
 		{
 			terminal_column = 0;
 			if (++terminal_row == VGA_HEIGHT)
-				terminal_row = 0;
+				terminal_scroll();
 		}
 	}
 }
@@ -166,7 +188,7 @@ void Keyboard_handler_loop()
 
                 if (c == '\b')
                 {
-                    if (terminal_column > 9)
+                    if (terminal_column > PROMPT_LENGTH)
                     {
                         terminal_column--;
                         terminal_putentry(' ', terminal_color, terminal_column, terminal_row);
@@ -194,6 +216,7 @@ void	print_prompt()
 	u8 old_color = terminal_color;
 	terminal_set_color(vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
 	terminal_write_string("kfs-1 -> ");
+	set_cursor(terminal_row, terminal_column);
 	terminal_set_color(old_color);
 }
 
