@@ -117,13 +117,15 @@ void	terminal_putchar(char c)
 	else
 	{
 		terminal_putentry(c, terminal_color, terminal_column, terminal_row);
-		set_cursor(terminal_row, terminal_column + 1);
-		if (++terminal_column == VGA_WIDTH)
+		++terminal_column;
+		if (terminal_column >= VGA_WIDTH)
 		{
 			terminal_column = 0;
-			if (++terminal_row == VGA_HEIGHT)
+			++terminal_row;
+			if (terminal_row >= VGA_HEIGHT)
 				terminal_scroll();
 		}
+		set_cursor(terminal_row, terminal_column + 1);
 	}
 }
 
@@ -143,6 +145,7 @@ void	clear_line()
 	}
 	terminal_column = PROMPT_LENGTH;
 	set_cursor(terminal_row, terminal_column);
+	print_prompt();
 }
 
 void	handle_ctrl_c()
