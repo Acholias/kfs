@@ -44,10 +44,33 @@ enum vga_color
 	VGA_COLOR_WHITE,
 };
 
+typedef struct	s_screen
+{
+	u8		save_color;
+	u16		*save_buffer;
+	size_t	save_row;
+	size_t	save_column;
+}	t_screen;
+
 extern	size_t		ft_strlen(const char *str);
 extern	void		*ft_memcpy(void *dest, const void *src, size_t n);
 
-void	print_prompt();
+
+void	terminal_initialize();
+void	terminal_set_color(u8 color);
+void	set_cursor(u16 row, u16 col);
+void	terminal_putentry(char c, u8 color, size_t x, size_t y);
+void	terminal_scroll();
+void	terminal_putchar(char c);
+void	terminal_write(const char *data, size_t size);
+void	clear_line();
+void	handle_ctrl_c();
+void	handle_backspace();
+void	handle_ctrl_l();
+void	handle_regular_char(char c);
+void	process_scancode(u8 scancode);
+void	keyboard_handler_loop();
 void	terminal_write_string(const char *data);
+void	print_prompt();
 
 #endif

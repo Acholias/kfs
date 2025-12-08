@@ -129,7 +129,7 @@ void	terminal_putchar(char c)
 	}
 }
 
-void terminal_write(const char *data, size_t size)
+void	terminal_write(const char *data, size_t size)
 {
     for (size_t i = 0; i < size; i++)
         terminal_putchar(data[i]);
@@ -206,7 +206,7 @@ void	process_scancode(u8 scancode)
 		handle_regular_char(c);
 }
 
-void Keyboard_handler_loop()
+void	keyboard_handler_loop()
 {
 	while (1)
 	{
@@ -252,5 +252,5 @@ void	kernel_main(void)
 {
 	terminal_initialize();
 	print_prompt();
-	Keyboard_handler_loop();
+	keyboard_handler_loop();
 }
