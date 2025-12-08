@@ -3,6 +3,15 @@
 #include "../includes/types.h"
 #include "../includes/io.h"
 
+size_t					terminal_row;
+size_t					terminal_column;
+u8						terminal_color;
+volatile u16			*terminal_buffer;
+
+static bool	shift_pressed =	false;
+static bool	caps_lock =	false;
+static bool	ctrl_pressed = false;
+
 static const char scancode_to_ascii[128] = {
     0,27,'1','2','3','4','5','6','7','8',
     '9','0','-','=','\b','\t',
@@ -23,9 +32,6 @@ static const char scancode_shift[128] = {
     'M','<','>','?',0,'*',0,' '
 };
 
-static bool	shift_pressed =	false;
-static bool	caps_lock =	false;
-static bool	ctrl_pressed = false;
 
 static inline u8 vga_entry_color(enum vga_color fg, enum vga_color bg)
 {
@@ -37,16 +43,12 @@ static inline u16	vga_entry(unsigned char uc, u8 color)
 	return ((u16)uc | (u16)color << 8);
 }
 
-size_t					terminal_row;
-size_t					terminal_column;
-u8						terminal_color;
-volatile u16			*terminal_buffer = (u16*)VGA_MEMORY;
-
 void	terminal_initialize()
 {
 	terminal_row = 0;
 	terminal_column = 0;
 	terminal_color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);
+	terminal_buffer = (u16*)VGA_MEMORY;
 
 	size_t	y = 0;
 	while (y < VGA_HEIGHT)
@@ -163,57 +165,68 @@ void	handle_ctrl_c()
 	print_prompt();
 }
 
+void	handle_backspace()
+{
+	if (terminal_column > PROMPT_LENGTH)
+	{
+		--terminal_column;
+		terminal_putentry(' ', terminal_color, terminal_column, terminal_row);	
+		set_cursor(terminal_row, terminal_column);
+	}
+}
+
+void	handle_ctrl_l()
+{
+	terminal_initialize();
+	print_prompt();
+}
+
+void	handle_regular_char(char c)
+{
+	if (caps_lock && c >= 'a' && c <= 'z')
+		c -= 32;
+	terminal_putchar(c);
+}
+
+void	process_scancode(u8 scancode)
+{
+	char c;
+	
+	if (shift_pressed)
+		c = scancode_shift[scancode];
+	else
+		c = scancode_to_ascii[scancode];
+	
+	if (c == BACKSPACE)
+		handle_backspace();
+	else if (c)
+		handle_regular_char(c);
+}
+
 void Keyboard_handler_loop()
 {
 	while (1)
 	{
 		if (inb(0x64) & 1)
 		{
-			u8 sc = inb(0x60);
-
-			if (sc == CTRL_PRESS)
+			u8 scancode = inb(0x60);
+			
+			if (scancode == CTRL_PRESS)
 				ctrl_pressed = true;
-			else if (sc == CTRL_RELEASE)
+			else if (scancode == CTRL_RELEASE)
 				ctrl_pressed = false;
-			else if (ctrl_pressed && sc == 0x2E)
+			else if (ctrl_pressed && scancode == KEY_C)
 				handle_ctrl_c();
-			else if (ctrl_pressed && sc == 0x26)
-			{
-				terminal_initialize();
-				terminal_row = 0;
-				terminal_column = 0;
-				print_prompt();
-			}
-			else if (sc == 0x2A || sc == 0x36)
+			else if (ctrl_pressed && scancode == KEY_L)
+				handle_ctrl_l();
+			else if (scancode == SHIFT_LEFT || scancode == SHIFT_RIGHT)
 				shift_pressed = true;
-			else if (sc == 0xAA || sc == 0xB6)
+			else if (scancode == SHIFT_LEFT_R || scancode == SHIFT_RIGHT_R)
 				shift_pressed = false;
-			else if (sc == 0x3A)
+			else if (scancode == CAPS_LOCK)
 				caps_lock = !caps_lock;
-			else if (sc < 128 && !ctrl_pressed)
-			{
-				char c;
-				if (shift_pressed)
-					c = scancode_shift[sc];
-				else
-					c = scancode_to_ascii[sc];
-
-				if (c == '\b')
-				{
-					if (terminal_column > PROMPT_LENGTH)
-					{
-						terminal_column--;
-						terminal_putentry(' ', terminal_color, terminal_column, terminal_row);
-						set_cursor(terminal_row, terminal_column);
-					}
-				}
-				else if (c)
-				{
-					if (caps_lock && c >= 'a' && c <= 'z')
-						c -= 32;
-					terminal_putchar(c);
-				}
-			}
+			else if (scancode < 128 && !ctrl_pressed)
+				process_scancode(scancode);
 		}
 	}
 }
@@ -229,7 +242,7 @@ void	print_prompt()
 	terminal_set_color(vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
 	terminal_write_string("kfs-1 -> ");
 	terminal_set_color(old_color);
-	set_cursor(terminal_row, terminal_column);
+	set_cursor(terminal_row, PROMPT_LENGTH);
 }
 
 void	kernel_main(void)

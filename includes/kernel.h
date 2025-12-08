@@ -1,18 +1,28 @@
 #ifndef KERNEL_H
 # define KERNEL_H
 
+# include "types.h"
+
 #if defined(__LINUX__)
 #error "You are not using a cross-compiler, you will most certainly run into trouble"
 #endif
 
-# define VGA_WIDTH   80
-# define VGA_HEIGHT  25
-# define VGA_MEMORY  0xB8000 
-# define PROMPT_LENGTH 9
-# define CTRL_PRESS   0x1D
-# define CTRL_RELEASE 0x9D
+# define VGA_WIDTH		80
+# define VGA_HEIGHT		25
+# define VGA_MEMORY		0xB8000
 
-# include "types.h"
+# define PROMPT_LENGTH	9
+
+# define CTRL_PRESS		0x1D
+# define CTRL_RELEASE	0x9D
+# define KEY_C			0x2E
+# define KEY_L			0x26
+# define SHIFT_LEFT		0x2A
+# define SHIFT_RIGHT	0x36
+# define SHIFT_LEFT_R	0xAA
+# define SHIFT_RIGHT_R	0xB6
+# define CAPS_LOCK		0x3A
+# define BACKSPACE		'\b'
 
 enum vga_color
 {
