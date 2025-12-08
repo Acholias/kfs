@@ -22,6 +22,12 @@
 # define SHIFT_LEFT_R	0xAA
 # define SHIFT_RIGHT_R	0xB6
 # define CAPS_LOCK		0x3A
+# define ALT_PRESS		0x38
+# define ALT_RELEASE	0xB8
+# define LEFT_ARROW		0x4B
+# define RIGHT_ARROW	0x4D
+# define NUM_SCREENS	2
+# define NEWLINE		'\n'
 # define BACKSPACE		'\b'
 
 enum vga_color
@@ -46,15 +52,14 @@ enum vga_color
 
 typedef struct	s_screen
 {
-	u8		save_color;
-	u16		*save_buffer;
-	size_t	save_row;
-	size_t	save_column;
+	u16			save_buffer[VGA_HEIGHT * VGA_WIDTH];
+	u8			save_color;
+	size_t		save_row;
+	size_t		save_column;
 }	t_screen;
 
 extern	size_t		ft_strlen(const char *str);
 extern	void		*ft_memcpy(void *dest, const void *src, size_t n);
-
 
 void	terminal_initialize();
 void	terminal_set_color(u8 color);

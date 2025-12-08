@@ -7,6 +7,8 @@ size_t					terminal_row;
 size_t					terminal_column;
 u8						terminal_color;
 volatile u16			*terminal_buffer;
+size_t					current_screen;
+t_screen				screens[NUM_SCREENS];
 
 static bool	shift_pressed =	false;
 static bool	caps_lock =	false;
@@ -49,6 +51,7 @@ void	terminal_initialize()
 	terminal_column = 0;
 	terminal_color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);
 	terminal_buffer = (u16*)VGA_MEMORY;
+	current_screen = 0;
 
 	size_t	y = 0;
 	while (y < VGA_HEIGHT)
@@ -104,7 +107,7 @@ void	terminal_scroll()
 
 void	terminal_putchar(char c)
 {
-	if (c == '\n')
+	if (c == NEWLINE)
 	{
 		terminal_row++;
 		terminal_column = 0;
@@ -125,7 +128,7 @@ void	terminal_putchar(char c)
 			if (terminal_row >= VGA_HEIGHT)
 				terminal_scroll();
 		}
-		set_cursor(terminal_row, terminal_column + 1);
+		set_cursor(terminal_row, terminal_column);
 	}
 }
 
