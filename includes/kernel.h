@@ -74,6 +74,7 @@ void	handle_backspace();
 void	handle_ctrl_l();
 void	handle_regular_char(char c);
 void	process_scancode(u8 scancode);
+void	arrow_handler(u8 scancode);
 void	keyboard_handler_loop();
 void	terminal_write_string(const char *data);
 void	print_prompt();
