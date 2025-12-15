@@ -52,7 +52,7 @@ enum vga_color
 
 typedef struct	s_screen
 {
-	u16			save_buffer[VGA_HEIGHT * VGA_WIDTH];
+	u16			save_buffer[VGA_WIDTH * VGA_HEIGHT];
 	u8			save_color;
 	size_t		save_row;
 	size_t		save_column;

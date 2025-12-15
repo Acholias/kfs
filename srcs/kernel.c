@@ -66,15 +66,13 @@ void	terminal_initialize()
 		y++;
 	}
 
-	// for (size_t s = 0; s < NUM_SCREENS; s++)
-	// {
-	// 	screens[s].save_row = 0;
-	// 	screens[s].save_column = 0;
-	// 	screens[s].save_color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);
-	//
-	// 	for (size_t i = 0; i < VGA_HEIGHT * VGA_WIDTH; i++)
-	// 		screens[s].save_buffer[i] = vga_entry(' ', screens[s].save_color);
-	// }
+	for (size_t s = 0; s < NUM_SCREENS; s++)
+	{
+		screens[s].save_row = 0;
+		screens[s].save_column = 0;
+		screens[s].save_color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);	
+		ft_memcpy(screens[s].save_buffer, (void *)terminal_buffer, VGA_WIDTH * VGA_HEIGHT * sizeof(u16));
+	}
 }
 
 void	terminal_clear_screen()
@@ -251,7 +249,7 @@ void	handle_terminal(u8 scancode)
 
 void	arrow_handler(u8 scancode)
 {
-	if (scancode == LEFT_ARROW && terminal_column >= 10)
+	if (scancode == LEFT_ARROW && terminal_column >= 11)
 	{
 		--terminal_column;
 		set_cursor(terminal_row, terminal_column - 1);
@@ -272,7 +270,7 @@ void	keyboard_handler_loop()
 		if (inb(0x64) & 1)
 		{
 			u8 scancode = inb(0x60);
-		
+			
 			handle_terminal(scancode);
 			arrow_handler(scancode);
 			if (scancode == CTRL_PRESS)
@@ -317,15 +315,14 @@ void	save_screen(size_t screen_id)
 	ft_memcpy(screens[screen_id].save_buffer, (void*)terminal_buffer,
 		   VGA_WIDTH * VGA_HEIGHT * sizeof(u16));
 	
-	screens[screen_id].save_row = terminal_row;
-	screens[screen_id].save_column = terminal_column;
-	screens[screen_id].save_color = terminal_color;
-
+	// screens[screen_id].save_row = terminal_row;
+	// screens[screen_id].save_column = terminal_column;
+	// screens[screen_id].save_color = terminal_color;
 }
 
 void	load_screen(size_t screen_id)
 {
-	if (screen_id >=NUM_SCREENS)
+	if (screen_id >= NUM_SCREENS)
 		return ;
 
 	ft_memcpy((void*)terminal_buffer, screens[screen_id].save_buffer,
@@ -336,7 +333,7 @@ void	load_screen(size_t screen_id)
 	terminal_color = screens[screen_id].save_color;
 
 	draw_screen_index();
-	set_cursor(terminal_row, terminal_column);
+	print_prompt();
 }
 
 void	switch_screen(size_t new_screen_id)
