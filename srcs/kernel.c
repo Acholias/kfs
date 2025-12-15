@@ -228,7 +228,7 @@ void	process_scancode(u8 scancode)
 		handle_regular_char(c);
 }
 
-void	handle_terminal(u8 scancode)
+void	handle_switch_terminal(u8 scancode)
 {
 	if (scancode == ALT_PRESS)
 		alt_pressed = true;
@@ -271,9 +271,10 @@ void	keyboard_handler_loop()
 		{
 			u8 scancode = inb(0x60);
 			
-			handle_terminal(scancode);
-			arrow_handler(scancode);
-			if (scancode == CTRL_PRESS)
+			handle_switch_terminal(scancode);
+			if (!ALT_PRESS && (scancode == RIGHT_ARROW || scancode == LEFT_ARROW))
+				arrow_handler(scancode);
+			else if (scancode == CTRL_PRESS)
 				ctrl_pressed = true;
 			else if (scancode == CTRL_RELEASE)
 				ctrl_pressed = false;
@@ -315,9 +316,9 @@ void	save_screen(size_t screen_id)
 	ft_memcpy(screens[screen_id].save_buffer, (void*)terminal_buffer,
 		   VGA_WIDTH * VGA_HEIGHT * sizeof(u16));
 	
-	// screens[screen_id].save_row = terminal_row;
+	screens[screen_id].save_row = terminal_row;
 	// screens[screen_id].save_column = terminal_column;
-	// screens[screen_id].save_color = terminal_color;
+	screens[screen_id].save_color = terminal_color;
 }
 
 void	load_screen(size_t screen_id)

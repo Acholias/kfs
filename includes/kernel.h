@@ -7,6 +7,7 @@
 #error "You are not using a cross-compiler, you will most certainly run into trouble"
 #endif
 
+// VGA est la grille pour le protocole video du terminal a l'adresse memoire 0xb8000
 # define VGA_WIDTH		80
 # define VGA_HEIGHT		25
 # define VGA_MEMORY		0xB8000
@@ -74,6 +75,7 @@ void	handle_backspace();
 void	handle_ctrl_l();
 void	handle_regular_char(char c);
 void	process_scancode(u8 scancode);
+void	handle_switch_terminal(u8 scancode);
 void	arrow_handler(u8 scancode);
 void	keyboard_handler_loop();
 void	terminal_write_string(const char *data);
