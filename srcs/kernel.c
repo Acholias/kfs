@@ -247,20 +247,21 @@ void	handle_switch_terminal(u8 scancode)
 	}
 }
 
+// Faire en sorte que le cursor se stop si il n'y a pas de text !
 void	arrow_handler(u8 scancode)
 {
-	if (scancode == LEFT_ARROW && terminal_column >= 11)
+	if (scancode == LEFT_ARROW)
 	{
-		--terminal_column;
-		set_cursor(terminal_row, terminal_column - 1);
+		if (terminal_column > PROMPT_LENGTH + 2)
+			--terminal_column;
 	}
 
 	else if (scancode == RIGHT_ARROW)
 	{
-		++terminal_column;
-		set_cursor(terminal_row, terminal_column + 1);
+		if (terminal_column < VGA_WIDTH - 1)
+			++terminal_column;
 	}
-
+	set_cursor(terminal_row, terminal_column);
 }
 
 void	keyboard_handler_loop()
@@ -272,7 +273,7 @@ void	keyboard_handler_loop()
 			u8 scancode = inb(0x60);
 			
 			handle_switch_terminal(scancode);
-			if (scancode == RIGHT_ARROW || scancode == LEFT_ARROW)
+			if (!alt_pressed && (scancode == RIGHT_ARROW || scancode == LEFT_ARROW))
 				arrow_handler(scancode);
 			else if (scancode == CTRL_PRESS)
 				ctrl_pressed = true;
@@ -313,10 +314,10 @@ void	save_screen(size_t screen_id)
 {
 	if (screen_id >= NUM_SCREENS)
 		return ;
-	
+
 	ft_memcpy(screens[screen_id].save_buffer, (void*)terminal_buffer,
 		   VGA_WIDTH * VGA_HEIGHT * sizeof(u16));
-	
+
 	screens[screen_id].save_row = terminal_row;
 	// screens[screen_id].save_column = terminal_column;
 	screens[screen_id].save_color = terminal_color;
@@ -333,19 +334,19 @@ void	load_screen(size_t screen_id)
 	terminal_row = screens[screen_id].save_row;
 	terminal_column = screens[screen_id].save_column;
 	terminal_color = screens[screen_id].save_color;
-
-	draw_screen_index();
-	print_prompt();
 }
 
 void	switch_screen(size_t new_screen_id)
 {
 	if (new_screen_id >= NUM_SCREENS || new_screen_id == current_screen)
 		return ;
-
+	
 	save_screen(current_screen);
 	current_screen = new_screen_id;
 	load_screen(new_screen_id);
+
+	draw_screen_index();
+	print_prompt();
 }
 
 void	draw_screen_index()
