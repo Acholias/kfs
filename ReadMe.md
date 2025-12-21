@@ -7,30 +7,8 @@ Ce document explique en détail les différentes fonctions assembleur utilisées
 ## 📋 Table des matières
 1. [Bootloader (boot.asm)](#1-bootloader-bootasm)
 2. [ft_memcpy](#2-ft_memcpy)
-3. [ft_strlen](#3-ft_strlen)
-
----
-
-## 1. Bootloader (boot.asm)
-
-### 📌 Vue d'ensemble
-Le bootloader est le point d'entrée de notre kernel. Il contient le **header Multiboot** compatible avec GRUB et initialise l'environnement d'exécution avant de transférer le contrôle au code C.
-
-### 🔍 Code complet
-```asm
-BITS 32
-extern kernel_main
-
-%define ALIGN      (1 << 0)# 🔧 Fonctions Assembleur - KFS-1
-
-Ce document explique en détail les différentes fonctions assembleur utilisées dans le projet KFS-1. Ces fonctions constituent la base bas-niveau du kernel et permettent l'interface entre le bootloader, le matériel et le code C.
-
----
-
-## 📋 Table des matières
-1. [Bootloader (boot.asm)](#1-bootloader-bootasm)
-2. [ft_memcpy](#2-ft_memcpy)
-3. [ft_strlen](#3-ft_strlen)
+3. [ft_memset](#3-ft_memset)
+4. [ft_strlen](#4-ft_strlen)
 
 ---
 
@@ -45,65 +23,6 @@ BITS 32
 extern kernel_main
 
 %define ALIGN      (1 << 0)
-%define MEMINFO    (1 << 1)
-%define FLAGS      (ALIGN | MEMINFO)
-%define MAGIC      0x1BADB002
-%define CHECKSUM   -(MAGIC + FLAGS)
-
-section .multiboot
-align 4
-    dd MAGIC
-    dd FLAGS
-    dd CHECKSUM
-
-section .bss
-align 16
-stack_bottom:
-    resb 16384
-stack_top:
-
-section .text
-global _start
-_start:
-    mov     esp, stack_top
-    call    kernel_main
-    cli
-.hang:
-    hlt
-    jmp     .hang
-```
-
-### 📖 Explication détaillée
-
-#### Mode 32 bits
-```asm
-BITS 32
-```
-Notre kernel s'exécute en **mode protégé 32 bits**. GRUB configure déjà le CPU dans ce mode avant de transférer le contrôle.
-
-#### Header Multiboot
-```asm
-%define MAGIC      0x1BADB002    ; Signature Multiboot obligatoire
-%define FLAGS      (ALIGN | MEMINFO)
-%define CHECKSUM   -(MAGIC + FLAGS)
-```
-
-Le header Multiboot permet à GRUB de reconnaître notre kernel. Il doit satisfaire :
-```
-MAGIC + FLAGS + CHECKSUM ≡ 0 (mod 2³²)
-```
-
-**Flags utilisés :**
-- `ALIGN (1 << 0)` : Demande l'alignement des modules sur 4 octets
-- `MEMINFO (1 << 1)` : GRUB fournit les informations sur la mémoire disponible
-
-#### Section Multiboot
-```asm
-section .multiboot
-align 4
-    dd MAGIC
-    dd FLAGS
-
 %define MEMINFO    (1 << 1)
 %define FLAGS      (ALIGN | MEMINFO)
 %define MAGIC      0x1BADB002
@@ -333,7 +252,127 @@ ft_memcpy((void*)terminal_buffer,
 
 ---
 
-## 3. ft_strlen
+## 3. ft_memset
+
+### 📌 Prototype
+```c
+void *ft_memset(void *s, int c, size_t n);
+```
+
+### 🎯 Fonction
+Remplit une zone mémoire avec un octet spécifique. Écrit `n` fois la valeur `c` à l'adresse `s`. Retourne `s`.
+
+### 🔍 Code complet
+```asm
+section .text
+    global  ft_memset
+
+ft_memset:
+    push    ebp                ; Sauvegarde le base pointer
+    mov     ebp, esp           ; Établit le stack frame
+    push    edi                ; Sauvegarde edi
+    
+    mov     edi, [ebp + 8]     ; edi = s (destination)
+    mov     eax, [ebp + 12]    ; eax = c (valeur à écrire)
+    mov     ecx, [ebp + 16]    ; ecx = n (nombre d'octets)
+    
+    mov     edx, edi           ; Sauvegarde s pour le retour
+    cmp     ecx, 0             ; Si n == 0
+    je      .end               ; Quitter directement
+    
+.loop:
+    mov     [edi], al          ; Écrire l'octet c dans [edi]
+    inc     edi                ; s++
+    dec     ecx                ; n--
+    jnz     .loop              ; Continuer si ecx != 0
+    
+.end:
+    mov     eax, edx           ; Restaure s pour le retour
+    pop     edi                ; Restaure edi
+    pop     ebp                ; Restaure ebp
+    ret                        ; Retourne (eax contient s)
+```
+
+### 📖 Explication détaillée
+
+#### Setup du stack frame
+```asm
+push    ebp
+mov     ebp, esp
+push    edi
+```
+- Sauvegarde de `ebp` pour restaurer l'état précédent
+- `ebp` devient le nouveau point de référence pour accéder aux paramètres
+- Sauvegarde de `edi` car nous allons le modifier
+
+#### Récupération des paramètres
+```asm
+mov     edi, [ebp + 8]     ; Premier paramètre : s (void*)
+mov     eax, [ebp + 12]    ; Deuxième paramètre : c (int)
+mov     ecx, [ebp + 16]    ; Troisième paramètre : n (size_t)
+```
+
+**Organisation de la pile :**
+```
+[ebp + 16]  →  n (size_t)
+[ebp + 12]  →  c (int)
+[ebp + 8]   →  s (void*)
+[ebp + 4]   →  Adresse de retour
+[ebp]       →  Ancien ebp
+```
+
+#### Préparation du retour
+```asm
+mov     edx, edi           ; Sauvegarde l'adresse s dans edx
+cmp     ecx, 0             ; Vérifie si n == 0
+je      .end               ; Si oui, termine
+```
+`edx` conserve la valeur initiale de `s` car `edi` sera incrémenté dans la boucle. La valeur de retour sera dans `eax` à la fin.
+
+#### Boucle de remplissage
+```asm
+.loop:
+    mov     [edi], al      ; Écrit l'octet al dans [edi]
+    inc     edi            ; s++
+    dec     ecx            ; n--
+    jnz     .loop          ; Si ecx != 0, continue
+```
+
+**Note importante :** On utilise `al` (les 8 bits de poids faible de `eax`) car on veut écrire un seul octet, même si `c` est passé comme un `int`.
+
+Équivalent C :
+```c
+while (n > 0) {
+    *s = (unsigned char)c;
+    s++;
+    n--;
+}
+```
+
+#### Nettoyage et retour
+```asm
+.end:
+    mov     eax, edx       ; Place l'adresse originale dans eax
+    pop     edi
+    pop     ebp
+    ret
+```
+Restaure l'état des registres et retourne le pointeur `s` original (stocké dans `edx`, puis transféré dans `eax`).
+
+### 💡 Utilisation
+Cette fonction est typiquement utilisée pour initialiser des zones mémoire, par exemple pour effacer un buffer :
+```c
+ft_memset(terminal_buffer, 0, VGA_WIDTH * VGA_HEIGHT * sizeof(u16));
+```
+Ou pour initialiser des structures :
+```c
+struct my_struct data;
+ft_memset(&data, 0, sizeof(data));  // Mise à zéro de la structure
+```
+
+---
+
+## 4. ft_strlen
 
 ### 📌 Prototype
 ```c
