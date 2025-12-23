@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   kernel.c                                           :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/12/22 18:06:36 by lumugot           #+#    #+#             */
-/*   Updated: 2025/12/23 19:19:01 by lumugot          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "../includes/kernel.h"
 #include "../includes/stdbool.h"
 #include "../includes/io.h"
@@ -419,7 +407,7 @@ void	kernel_main(void)
 {
 	terminal_initialize();
 	printk("%d\n", 42);
-	// printk("\n");
+	printk("\n");
 	print_prompt();
 	keyboard_handler_loop();
 }
