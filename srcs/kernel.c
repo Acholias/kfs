@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/22 18:06:36 by lumugot           #+#    #+#             */
-/*   Updated: 2025/12/22 18:36:22 by lumugot          ###   ########.fr       */
+/*   Updated: 2025/12/23 19:19:01 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,6 @@ u8				terminal_color = 0;
 volatile u16	*terminal_buffer = 0;
 size_t			current_screen = 0;
 t_screen		screens[NUM_SCREENS];
-
-static	char			input_buffer[VGA_WIDTH];
-static	size_t			input_lenght;
-static	size_t			cursor_position;
 
 static bool	shift_pressed =	false;
 static bool	caps_lock =	false;
@@ -89,9 +85,6 @@ void	terminal_initialize()
 		screens[s].save_color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);	
 		ft_memcpy(screens[s].save_buffer, (void *)terminal_buffer, VGA_WIDTH * VGA_HEIGHT * sizeof(u16));
 	}
-	input_lenght = 0;
-	cursor_position = 0;
-	ft_memset(input_buffer, 0, VGA_WIDTH);
 }
 
 void	terminal_clear_screen()
@@ -190,13 +183,6 @@ void	clear_line()
 
 void	redraw_input_line()
 {
-	for (size_t index = 0; index < VGA_WIDTH - PROMPT_LENGTH; ++index)
-		terminal_putentry(' ', terminal_color, PROMPT_LENGTH + index, terminal_row);
-
-	for (size_t index = 0; index < input_lenght; ++index)
-		terminal_putentry(input_buffer[index], terminal_color, PROMPT_LENGTH + index, terminal_row);
-
-	terminal_column = PROMPT_LENGTH + cursor_position;
 	set_cursor(terminal_row, terminal_column);
 }
 
@@ -217,36 +203,22 @@ void	handle_ctrl_c()
 	if (terminal_row >= VGA_HEIGHT)
 		terminal_scroll();
 	
-	input_lenght = 0;
-	cursor_position = 0;
-	ft_memset(input_buffer, 0, VGA_WIDTH);
-	
 	print_prompt();
 }
 
 void	handle_backspace()
 {
-	if (cursor_position > 0)
+	if (terminal_column > PROMPT_LENGTH)
 	{
-		for (size_t index = cursor_position - 1; index < input_lenght - 1; ++index)
-			input_buffer[index] = input_buffer[index + 1];
-	
-		input_buffer[input_lenght - 1] = '\0';
-		--input_lenght;
-		--cursor_position;
-	
-		redraw_input_line();
+		--terminal_column;
+		terminal_putentry(' ', terminal_color, terminal_column, terminal_row);
+		set_cursor(terminal_row, terminal_column);
 	}
 }
 
 void	handle_ctrl_l()
 {
 	terminal_clear_screen();
-	
-	input_lenght = 0;
-	cursor_position = 0;
-	ft_memset(input_buffer, 0, VGA_WIDTH);
-
 	print_prompt();
 }
 
@@ -255,28 +227,15 @@ void	handle_regular_char(char c)
 	if (caps_lock && c >= 'a' && c <= 'z')
 		c -= 32;
 
-	if (input_lenght >= VGA_WIDTH - PROMPT_LENGTH - 1)
+	if (terminal_column >= VGA_WIDTH - 1)
 		return ;
 
-	if (cursor_position < input_lenght)
-	{
-		for	(size_t index = input_lenght; index > cursor_position; --index)
-			input_buffer[index] = input_buffer[index - 1];
-	}
-
-	input_buffer[cursor_position] = c;
-	++input_lenght;
-	++cursor_position;
-
-	redraw_input_line();
+	terminal_putchar(c);
 }
 
 void	handle_enter()
 {
 	terminal_putchar('\n');
-	input_lenght = 0;
-	cursor_position = 0;
-	ft_memset(input_buffer, 0, VGA_WIDTH);
 	print_prompt();
 }
 
@@ -324,19 +283,17 @@ void	arrow_handler(u8 scancode)
 {
 	if (scancode == LEFT_ARROW)
 	{
-		if (cursor_position > 0)
+		if (terminal_column > PROMPT_LENGTH)
 		{
-			--cursor_position;
-			terminal_column = PROMPT_LENGTH + cursor_position;
+			--terminal_column;
 			set_cursor(terminal_row, terminal_column);
 		}
 	}
 	else if (scancode == RIGHT_ARROW)
 	{
-		if (cursor_position < input_lenght)
+		if (terminal_column < VGA_WIDTH - 1)
 		{
-			++cursor_position;
-			terminal_column = PROMPT_LENGTH + cursor_position;
+			++terminal_column;
 			set_cursor(terminal_row, terminal_column);
 		}
 	}
