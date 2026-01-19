@@ -58,7 +58,7 @@ typedef struct	s_screen
 	size_t		save_column;
 	u8			save_color;
 	u16			save_buffer[VGA_WIDTH * VGA_HEIGHT];
-}	__attribute__((packed)) t_screen;
+}	t_screen;
 
 extern	size_t		ft_strlen(const char *str);
 extern	void		*ft_memcpy(void *dest, const void *src, size_t n);

@@ -65,7 +65,7 @@ void	terminal_initialize()
 		}
 		y++;
 	}
-
+	print_prompt();
 	for (size_t s = 0; s < NUM_SCREENS; ++s)
 	{
 		screens[s].save_row = 0;
@@ -356,7 +356,7 @@ void	save_screen(size_t screen_id)
 		   VGA_WIDTH * VGA_HEIGHT * sizeof(u16));
 
 	screens[screen_id].save_row = terminal_row;
-	// screens[screen_id].save_column = terminal_column;
+	screens[screen_id].save_column = terminal_column;
 	screens[screen_id].save_color = terminal_color;
 }
 
@@ -371,6 +371,9 @@ void	load_screen(size_t screen_id)
 	terminal_row = screens[screen_id].save_row;
 	terminal_column = screens[screen_id].save_column;
 	terminal_color = screens[screen_id].save_color;
+	if (terminal_column == 0)
+		terminal_column = PROMPT_LENGTH;
+	set_cursor(terminal_row, terminal_column);
 }
 
 void	switch_screen(size_t new_screen_id)
@@ -383,7 +386,6 @@ void	switch_screen(size_t new_screen_id)
 	load_screen(new_screen_id);
 
 	draw_screen_index();
-	print_prompt();
 }
 
 void	draw_screen_index()
@@ -407,7 +409,6 @@ void	kernel_main(void)
 {
 	terminal_initialize();
 	printk("%d\n", 42);
-	printk("\n");
 	print_prompt();
 	keyboard_handler_loop();
 }
