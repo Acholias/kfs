@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/19 21:45:17 by lumugot           #+#    #+#             */
-/*   Updated: 2026/01/20 12:45:49 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/01/21 07:12:56 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ typedef struct s_gdt_ptr
 # define GDT_CODE_SEGMENT			(1 << 3) // Segment de code
 
 // Bit 2: Direction/Conforming (DC)
-# define GDT_GROW_UP					(0 << 2)  // Data: grandit vers le haut
+# define GDT_GROW_UP				(0 << 2)  // Data: grandit vers le haut
 # define GDT_GROW_DOWN				(1 << 2)  // Data: grandit vers le bas (stack)
 # define GDT_NON_CONFORMING			(0 << 2)  // Code: non-conforming
 # define GDT_CONFORMING				(1 << 2)  // Code: conforming

@@ -11,10 +11,10 @@ size_t			current_screen = 0;
 t_screen		screens[NUM_SCREENS];
 size_t			input_end = PROMPT_LENGTH;
 
-static bool	shift_pressed =	false;
-static bool	caps_lock =	false;
-static bool	ctrl_pressed = false;
-static bool alt_pressed = false;
+static bool		shift_pressed =	false;
+static bool		caps_lock =	false;
+static bool		ctrl_pressed = false;
+static bool		alt_pressed = false;
 
 static	char	input_buffer[INPUT_MAX];
 static	size_t	input_len = 0;

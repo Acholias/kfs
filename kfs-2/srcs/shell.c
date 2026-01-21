@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/20 12:13:07 by lumugot           #+#    #+#             */
-/*   Updated: 2026/01/20 19:42:41 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/01/21 07:39:55 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,11 +46,11 @@ void	execute_command(const char *cmd)
 	if (len == 4 && ft_strncmp(cmd,	"help", 4) == 0)
 	{
 		printk("Commands:\n");
-		printk("help		 - show this message\n");
-		printk("clear		 - clear screen\n");
-		printk("reboot		 - reboot machine\n");
-		printk("halt		 - stop cpu\n");
-		printk("gdt			 - print gdt\n");
+		printk("help         - show this message\n");
+		printk("clear        - clear screen\n");
+		printk("reboot       - reboot machine\n");
+		printk("halt         - stop cpu\n");
+		printk("gdt          - print gdt\n");
 		printk("Hello there  - print easter egg\n");
 	}
 	
@@ -78,5 +78,5 @@ void	execute_command(const char *cmd)
 	}
 
 	else if (ft_strncmp(cmd, "Hello there", 11) == 0)
-		printk("General Grievous\n");
+		printk("General Kenobi\n");
 }
