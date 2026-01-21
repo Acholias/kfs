@@ -112,7 +112,7 @@ void	set_cursor(u16 row, u16 col)
 void	terminal_putentry(char c, u8 color, size_t x, size_t y)
 {
 	const size_t index = y * VGA_WIDTH + x;
-	terminal_buffer[index] =vga_entry(c, color);
+	terminal_buffer[index] = vga_entry(c, color);
 }
 
 void	terminal_scroll()
@@ -146,7 +146,7 @@ void	terminal_putchar(char c)
 	{
 		terminal_putentry(c, terminal_color, terminal_column, terminal_row);
 		++terminal_column;
-		if (terminal_column >= VGA_WIDTH)
+		if (terminal_column >= VGA_WIDTH - 14 && terminal_row == 0)
 		{
 			terminal_column = 0;
 			++terminal_row;
@@ -229,9 +229,6 @@ void	handle_regular_char(char c)
 {
 	if (caps_lock && c >= 'a' && c <= 'z')
 		c -= 32;
-
-	if (terminal_column >= VGA_WIDTH - 1)
-		return ;
 
 	input_buffer[input_len++] = c;
 	input_buffer[input_len] = 0;

@@ -67,9 +67,10 @@ extern	size_t		ft_strlen(const char *str);
 extern	void		*ft_memcpy(void *dest, const void *src, size_t n);
 extern	void		ft_memset(void *s, int c, size_t n);	
 
-//printk
+// printk.c
 int		printk(const char *str, ...);
 
+// kernel.c
 void	terminal_initialize();
 void	terminal_set_color(u8 color);
 void	set_cursor(u16 row, u16 col);
