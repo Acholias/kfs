@@ -21,7 +21,7 @@ C_OBJECTS = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(C_SOURCES))
 OBJECTS = $(ASM_OBJECTS) $(C_OBJECTS)
 
 KERNEL = $(BUILD_DIR)/kernel.bin
-ISO = kfs-1.iso
+ISO = kfs-2.iso
 
 all: $(ISO)
 
@@ -29,7 +29,7 @@ $(ISO): $(KERNEL)
 	@mkdir -p $(GRUB_DIR)
 	@cp $(KERNEL) $(BOOT_DIR)/kernel.bin
 	@echo '' >> $(GRUB_DIR)/grub.cfg
-	@echo 'menuentry "KFS-1" {' >> $(GRUB_DIR)/grub.cfg
+	@echo 'menuentry "KFS-2" {' >> $(GRUB_DIR)/grub.cfg
 	@echo '    multiboot /boot/kernel.bin' >> $(GRUB_DIR)/grub.cfg
 	@echo '    boot' >> $(GRUB_DIR)/grub.cfg
 	@echo '}' >> $(GRUB_DIR)/grub.cfg
