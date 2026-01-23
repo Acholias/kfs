@@ -242,6 +242,7 @@ void	handle_enter()
 {
 	terminal_putchar('\n');
 	execute_command(input_buffer);
+	ft_memset(input_buffer, 0, sizeof(input_buffer));
 	input_len = 0;
 	print_prompt();
 	input_end = PROMPT_LENGTH;
