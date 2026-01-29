@@ -419,6 +419,5 @@ void	kernel_main()
 	terminal_initialize();
 	printk("%d\n", 42);
 	print_prompt();
-	printk("[%d]", terminal_column);
 	keyboard_handler_loop();
 }

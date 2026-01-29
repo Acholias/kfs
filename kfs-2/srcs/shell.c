@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/20 12:13:07 by lumugot           #+#    #+#             */
-/*   Updated: 2026/01/29 14:29:05 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/01/29 16:09:53 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,68 @@ size_t	get_cmd(const char *cmd)
 	return (index);
 }
 
+static void	terminal_color_helper()
+{
+	u8	old_color = terminal_color;
+
+	terminal_clear_screen();
+	terminal_set_color(VGA_COLOR_LIGHT_BROWN);
+	printk("All colors:\n");
+	printk("BLUE          = 0\n");
+	printk("GREEN         = 1\n");
+	printk("CYAN          = 2\n");
+	printk("RED           = 3\n");
+	printk("MAGENTA       = 4\n");
+	printk("BROWN         = 5\n");
+	printk("LIGHT_GREY    = 6\n");
+	printk("DARK_GREY     = 7\n");
+	printk("LIGHT_BLUE    = 8\n");
+	printk("LIGHT_GREEN   = 9\n");
+	printk("LIGHT_CYAN    = 10\n");
+	printk("LIGHT_RED2    = 11\n");
+	printk("LIGHT_MAGENTA = 12\n");
+	printk("LIGHT_BROW    = 13\n");
+	printk("WHITE         = 14\n");
+	terminal_set_color(old_color);
+}
+
+// 117
+static void	terminal_color_manager()
+{
+	char	input[10];
+	int		color;
+	u32		index;
+
+	terminal_color_helper();
+	printk("\nEnter color number: ");
+
+	index = 0;
+	while (index < 9)
+	{
+		input[index] = inb(0x60);
+		if (input[index] == '\n' || input[index] == '\r')
+			break ;
+		index++;
+	}
+	input[index] = '\0';
+	
+
+	index = 0;
+	color = 0;
+	while (input[index] >= '0' && input[index] <= 14)
+	{
+		color = color * 10 + (input[index] - '0');
+		index++;
+	}
+	if (color >= 0 && color <= 14)
+	{
+		terminal_set_color(color);
+		printk("Terminal color change !");
+	}
+	else
+		printk("Invalid color number !\n");
+}
+
 void	execute_command(const char *cmd)
 {
 	size_t	len;
@@ -48,12 +110,13 @@ void	execute_command(const char *cmd)
 		printk("Commands:\n");
 		printk("help         - show this message\n");
 		printk("clear        - clear screen\n");
-		printk("reboot       - reboot machine\n");
+		printk("reboot       - reboot kernel\n");
 		printk("halt         - stop cpu\n");
 		printk("exit         - exit kernel\n");
 		printk("stack        - print stack\n");
 		printk("gdt          - print gdt\n");
 		printk("Hello there  - print easter egg\n");
+		printk("color        - Change text color\n");
 	}
 	
 	else if (len == 5 && ft_strncmp(cmd, "clear", 5) == 0)
@@ -84,4 +147,7 @@ void	execute_command(const char *cmd)
 
 	else if (ft_strncmp(cmd, "Hello there", 11) == 0)
 		printk("General Kenobi\n");
+
+	else if (ft_strncmp(cmd, "color", 5) == 0)
+		terminal_color_manager();
 }

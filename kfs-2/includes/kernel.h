@@ -7,7 +7,6 @@
 #error "You are not using a cross-compiler, you will most certainly run into trouble"
 #endif
 
-// VGA est la grille pour le protocole video du cpu a l'adresse memoire 0xb8000
 # define VGA_WIDTH		80
 # define VGA_HEIGHT		25
 # define VGA_MEMORY		0xB8000
@@ -54,6 +53,7 @@ enum vga_color
 	VGA_COLOR_WHITE,
 };
 
+// Struct for save screen data
 typedef struct	s_screen
 {
 	size_t		save_row;
@@ -63,6 +63,11 @@ typedef struct	s_screen
 	u16			save_buffer[VGA_WIDTH * VGA_HEIGHT];
 }	t_screen;
 
+extern size_t	terminal_row;
+extern size_t	terminal_column;
+extern u8		terminal_color;
+
+// LIBC functions in ASM
 extern	size_t		ft_strlen(const char *str);
 extern	void		*ft_memcpy(void *dest, const void *src, size_t n);
 extern	void		ft_memset(void *s, int c, size_t n);	
