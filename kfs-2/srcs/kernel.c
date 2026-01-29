@@ -357,7 +357,7 @@ void	print_prompt()
 	u8 old_color = terminal_color;
 	terminal_set_color(vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
 	size_t i = 0;
-	const char *prompt = "kfs-2 -> ";
+	const char *prompt = "kfs -> ";
 	while (prompt[i])
 	{
 		terminal_putchar(prompt[i]);

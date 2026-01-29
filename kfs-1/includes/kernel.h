@@ -12,7 +12,7 @@
 # define VGA_HEIGHT		25
 # define VGA_MEMORY		0xB8000
 
-# define PROMPT_LENGTH	9
+# define PROMPT_LENGTH	7
 
 # define CTRL_PRESS		0x1D
 # define CTRL_RELEASE	0x9D

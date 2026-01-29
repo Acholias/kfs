@@ -12,7 +12,7 @@
 # define VGA_HEIGHT		25
 # define VGA_MEMORY		0xB8000
 
-# define PROMPT_LENGTH	9
+# define PROMPT_LENGTH	7
 
 # define INPUT_MAX		256
 

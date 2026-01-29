@@ -142,7 +142,10 @@ void	terminal_putchar(char c)
 	{
 		terminal_putentry(c, terminal_color, terminal_column, terminal_row);
 		++terminal_column;
-		if (terminal_column >= VGA_WIDTH)
+
+		size_t	max_col	= (terminal_row == 0) ? (VGA_WIDTH - 14) : VGA_WIDTH;
+
+		if (terminal_column >= max_col)
 		{
 			terminal_column = 0;
 			++terminal_row;
@@ -170,11 +173,6 @@ void	clear_line()
 	terminal_column = PROMPT_LENGTH;
 	set_cursor(terminal_row, terminal_column);
 	print_prompt();
-}
-
-void	redraw_input_line()
-{
-	set_cursor(terminal_row, terminal_column);
 }
 
 void	handle_ctrl_c()
@@ -223,9 +221,6 @@ void	handle_regular_char(char c)
 	if (caps_lock && c >= 'a' && c <= 'z')
 		c -= 32;
 
-	if (terminal_column >= VGA_WIDTH - 1)
-		return ;
-	
 	terminal_putchar(c);
 
 	if (terminal_column > input_end)
@@ -348,7 +343,7 @@ void	print_prompt()
 	u8 old_color = terminal_color;
 	terminal_set_color(vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
 	size_t i = 0;
-	const char *prompt = "kfs-1 -> ";
+	const char *prompt = "kfs -> ";
 	while (prompt[i])
 	{
 		terminal_putchar(prompt[i]);
@@ -424,5 +419,6 @@ void	kernel_main()
 	terminal_initialize();
 	printk("%d\n", 42);
 	print_prompt();
+	printk("[%d]", terminal_column);
 	keyboard_handler_loop();
 }
