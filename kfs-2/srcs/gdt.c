@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/30 14:21:30 by lumugot           #+#    #+#             */
-/*   Updated: 2026/01/30 14:21:31 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/01/30 20:00:08 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,6 @@ void	gdt_set_gate(u32 num, u32 base, u32 limit, u8 access_byte, u8 flags)
 
 void	gdt_init(void)
 {
-	// Configuration du pointeur gdt
 	gdt_ptr.limit = (sizeof(t_gdt_entry) * GDT_ENTRIES_COUNT) - 1;
 	gdt_ptr.base  = (u32)gdt;
 	gdt_set_gate(GDT_NULL_SEGMENT, 0, 0, 0 ,0);
@@ -51,11 +50,9 @@ void	gdt_init(void)
 
 void	print_gdt(t_screen *screen)
 {
-	terminal_set_color(screen, VGA_COLOR_LIGHT_CYAN);
 	printk(screen, "[GDT] Initialized at 0x%x with %d entries\n", GDT_BASE_ADRESS, GDT_ENTRIES_COUNT);
 	printk(screen, "GDT base:  0x%x\n", gdt_ptr.base);
 	printk(screen, "GDT limit: 0x%x\n", gdt_ptr.limit);
-	terminal_set_color(screen, VGA_COLOR_LIGHT_RED2);
 }
 
 void	print_stack(t_screen *screen)

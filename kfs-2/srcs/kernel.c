@@ -5,7 +5,6 @@
 
 size_t			current_screen = 0;
 t_save_screen	screens[NUM_SCREENS];
-size_t			input_end = PROMPT_LENGTH;
 
 static bool		shift_pressed =	false;
 static bool		caps_lock =	false;
@@ -52,10 +51,11 @@ t_screen	*terminal_initialize()
 
 	screen->terminal_row = 0;
 	screen->terminal_column = 0;
-	screen->terminal_color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);
+	screen->terminal_color = vga_entry_color(VGA_COLOR_LIGHT_BROWN, VGA_COLOR_BLACK);
 	screen->terminal_buffer = (u16*)VGA_MEMORY;
 	current_screen = 0;
-	input_end = PROMPT_LENGTH;
+	screen->prompt_length = 7;
+	screen->input_end = screen->prompt_length;
 	
 	size_t	y = 0;
 	while (y < VGA_HEIGHT)
@@ -74,7 +74,7 @@ t_screen	*terminal_initialize()
 	{
 		screens[s].save_row = 0;
 		screens[s].save_column = 0;
-		screens[s].save_input_end = PROMPT_LENGTH;
+		screens[s].save_input_end = screen->prompt_length;
 		screens[s].save_color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);	
 		ft_memcpy(screens[s].save_buffer, (void *)screen->terminal_buffer, VGA_WIDTH * VGA_HEIGHT * sizeof(u16));
 	}
@@ -89,7 +89,6 @@ void	terminal_clear_screen(t_screen *screen)
 
     screen->terminal_row = 0;
     screen->terminal_column = 0;
-	screen->terminal_color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);
 }
 
 void	terminal_set_color(t_screen *screen, u8 color)
@@ -168,41 +167,38 @@ void	terminal_write(t_screen *screen, const char *data, size_t size)
 
 void	clear_line(t_screen *screen)
 {
-	size_t	x = PROMPT_LENGTH;
+	size_t	x = screen->prompt_length;
 	while (x < VGA_WIDTH)
 	{
 		terminal_putentry(screen, ' ', screen->terminal_color, x, screen->terminal_row);
 		++x;
 	}
-	screen->terminal_column = PROMPT_LENGTH;
+	screen->terminal_column = screen->prompt_length; 
 	set_cursor(screen->terminal_row, screen->terminal_column);
 	print_prompt(screen);
 }
 
 void	handle_ctrl_c(t_screen *screen)
 {
-	u8	old_color = screen->terminal_color;
-
-	terminal_set_color(screen, vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK));	
 	terminal_putentry(screen, '^', screen->terminal_color, screen->terminal_column, screen->terminal_row);
 	screen->terminal_column++;
 	terminal_putentry(screen, 'C', screen->terminal_color, screen->terminal_column, screen->terminal_row);
 	screen->terminal_column++;
 	
-	terminal_set_color(screen, old_color);
 	screen->terminal_column = 0;
 	screen->terminal_row++;
-	
+	ft_memset(screen->terminal_buffer, 0, sizeof(screen->terminal_buffer));
+
 	if (screen->terminal_row >= VGA_HEIGHT)
 		terminal_scroll(screen);
 	
 	print_prompt(screen);
-	input_end = PROMPT_LENGTH;
+	screen->input_end = screen->prompt_length;
 }
 
 void	handle_backspace(t_screen *screen)
 {
-	if (screen->terminal_column > PROMPT_LENGTH)
+	if (screen->terminal_column > screen->prompt_length)
 	{
 		--input_len;
 		input_buffer[input_len] = 0;
@@ -211,8 +207,8 @@ void	handle_backspace(t_screen *screen)
 		terminal_putentry(screen, ' ', screen->terminal_color, screen->terminal_column, screen->terminal_row);
 		set_cursor(screen->terminal_row, screen->terminal_column);
 	
-		if (screen->terminal_column < input_end)
-			input_end = screen->terminal_column;
+		if (screen->terminal_column < screen->input_end)
+			screen->input_end = screen->terminal_column;
 	}
 }
 
@@ -220,7 +216,7 @@ void	handle_ctrl_l(t_screen *screen)
 {
 	terminal_clear_screen(screen);
 	print_prompt(screen);
-	input_end = PROMPT_LENGTH;
+	screen->input_end = screen->prompt_length;
 }
 
 void	handle_regular_char(t_screen *screen, char c)
@@ -233,8 +229,8 @@ void	handle_regular_char(t_screen *screen, char c)
 
 	terminal_putchar(screen, c);
 
-	if (screen->terminal_column > input_end)
-		input_end = screen->terminal_column;
+	if (screen->terminal_column > screen->input_end)
+		screen->input_end = screen->terminal_column;
 }
 
 void	handle_enter(t_screen *screen)
@@ -244,7 +240,7 @@ void	handle_enter(t_screen *screen)
 	ft_memset(input_buffer, 0, sizeof(input_buffer));
 	input_len = 0;
 	print_prompt(screen);
-	input_end = PROMPT_LENGTH;
+	screen->input_end = screen->prompt_length;
 }
 
 void	process_scancode(t_screen *screen, u8 scancode)
@@ -291,7 +287,7 @@ void	arrow_handler(t_screen *screen, u8 scancode)
 {
 	if (scancode == LEFT_ARROW)
 	{
-		if (screen->terminal_column > PROMPT_LENGTH)
+		if (screen->terminal_column > screen->prompt_length)
 		{
 			--screen->terminal_column;
 			set_cursor(screen->terminal_row, screen->terminal_column);
@@ -299,7 +295,7 @@ void	arrow_handler(t_screen *screen, u8 scancode)
 	}
 	else if (scancode == RIGHT_ARROW)
 	{
-		if (screen->terminal_column < input_end && screen->terminal_column < VGA_WIDTH - 1)
+		if (screen->terminal_column < screen->input_end && screen->terminal_column < VGA_WIDTH - 1)
 		{
 			++screen->terminal_column;
 			set_cursor(screen->terminal_row, screen->terminal_column);
@@ -364,7 +360,7 @@ void	print_prompt(t_screen *screen)
 	}
 	terminal_set_color(screen, old_color);
 	draw_screen_index(screen);
-	set_cursor(screen->terminal_row, PROMPT_LENGTH);
+	set_cursor(screen->terminal_row, screen->prompt_length);
 }
 
 void	save_screen(t_screen *screen, size_t screen_id) 
@@ -377,7 +373,7 @@ void	save_screen(t_screen *screen, size_t screen_id)
 
 	screens[screen_id].save_row = screen->terminal_row;
 	screens[screen_id].save_column = screen->terminal_column;
-	screens[screen_id].save_input_end = input_end;
+	screens[screen_id].save_input_end = screen->input_end;
 	screens[screen_id].save_color = screen->terminal_color;
 }
 
@@ -391,10 +387,10 @@ void	load_screen(t_screen *screen, size_t screen_id)
 
 	screen->terminal_row = screens[screen_id].save_row;
 	screen->terminal_column = screens[screen_id].save_column;
-	input_end = screens[screen_id].save_input_end;
+	screen->input_end = screens[screen_id].save_input_end;
 	screen->terminal_color = screens[screen_id].save_color;
 	if (screen->terminal_column == 0)
-		screen->terminal_column = PROMPT_LENGTH;
+		screen->terminal_column = screen->prompt_length;
 	set_cursor(screen->terminal_row, screen->terminal_column);
 }
 
@@ -431,7 +427,7 @@ void	need_help(t_screen *screen)
 {
 	terminal_set_color(screen, VGA_COLOR_LIGHT_BROWN);
 	printk(screen, "If you don't know what to write, try 'help'\n");
-	terminal_set_color(screen, VGA_COLOR_LIGHT_RED2);
+	terminal_set_color(screen, screen->terminal_color);
 }
 
 void	kernel_main()
