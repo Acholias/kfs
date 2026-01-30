@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/19 21:45:17 by lumugot           #+#    #+#             */
-/*   Updated: 2026/01/21 17:09:10 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/01/30 14:21:59 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,7 +105,7 @@ typedef struct s_gdt_ptr
 
 void	gdt_set_gate(u32 num, u32 base, u32 limit, u8 access_byte, u8 flags);
 void	gdt_init(void);
-void	print_gdt(void);
-void	print_stack(void);
+void	print_gdt(t_screen *screen);
+void	print_stack(t_screen *screen);
 
 #endif

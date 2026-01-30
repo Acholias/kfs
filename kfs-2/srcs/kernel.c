@@ -3,12 +3,8 @@
 #include "../includes/io.h"
 #include "../includes/gdt.h"
 
-size_t			terminal_row = 0;
-size_t			terminal_column = 0;
-u8				terminal_color = 0;
-volatile u16	*terminal_buffer = 0;
 size_t			current_screen = 0;
-t_screen		screens[NUM_SCREENS];
+t_save_screen	screens[NUM_SCREENS];
 size_t			input_end = PROMPT_LENGTH;
 
 static bool		shift_pressed =	false;
@@ -50,12 +46,14 @@ static inline u16	vga_entry(unsigned char uc, u8 color)
 	return ((u16)uc | (u16)color << 8);
 }
 
-void	terminal_initialize()
+t_screen	*terminal_initialize()
 {
-	terminal_row = 0;
-	terminal_column = 0;
-	terminal_color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);
-	terminal_buffer = (u16*)VGA_MEMORY;
+	t_screen		*screen = NULL;
+
+	screen->terminal_row = 0;
+	screen->terminal_column = 0;
+	screen->terminal_color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);
+	screen->terminal_buffer = (u16*)VGA_MEMORY;
 	current_screen = 0;
 	input_end = PROMPT_LENGTH;
 	
@@ -66,36 +64,37 @@ void	terminal_initialize()
 		while (x < VGA_WIDTH)
 		{
 			const size_t index = (y * VGA_WIDTH) + x;
-			terminal_buffer[index] = vga_entry(' ', terminal_color);
+			screen->terminal_buffer[index] = vga_entry(' ', screen->terminal_color);
 			x++;
 		}
 		y++;
 	}
-	print_prompt();
+	print_prompt(screen);
 	for (size_t s = 0; s < NUM_SCREENS; ++s)
 	{
 		screens[s].save_row = 0;
 		screens[s].save_column = 0;
 		screens[s].save_input_end = PROMPT_LENGTH;
 		screens[s].save_color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);	
-		ft_memcpy(screens[s].save_buffer, (void *)terminal_buffer, VGA_WIDTH * VGA_HEIGHT * sizeof(u16));
+		ft_memcpy(screens[s].save_buffer, (void *)screen->terminal_buffer, VGA_WIDTH * VGA_HEIGHT * sizeof(u16));
 	}
+	return (screen);
 }
 
-void	terminal_clear_screen()
+void	terminal_clear_screen(t_screen *screen)
 {
     for (size_t y = 0; y < VGA_HEIGHT; y++)
         for (size_t x = 0; x < VGA_WIDTH; x++)
-            terminal_buffer[y * VGA_WIDTH + x] = vga_entry(' ', terminal_color);
+            screen->terminal_buffer[y * VGA_WIDTH + x] = vga_entry(' ', screen->terminal_color);
 
-    terminal_row = 0;
-    terminal_column = 0;
-	terminal_color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);
+    screen->terminal_row = 0;
+    screen->terminal_column = 0;
+	screen->terminal_color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);
 }
 
-void	terminal_set_color(u8 color)
+void	terminal_set_color(t_screen *screen, u8 color)
 {
-	terminal_color = color;
+	screen->terminal_color = color;
 }
 
 void	set_cursor(u16 row, u16 col)
@@ -109,122 +108,122 @@ void	set_cursor(u16 row, u16 col)
     outb(0x3D5, (pos >> 8) & 0xFF);
 }
 
-void	terminal_putentry(char c, u8 color, size_t x, size_t y)
+void	terminal_putentry(t_screen *screen, char c, u8 color, size_t x, size_t y)
 {
 	const size_t index = y * VGA_WIDTH + x;
-	terminal_buffer[index] = vga_entry(c, color);
+	screen->terminal_buffer[index] = vga_entry(c, color);
 }
 
-void	terminal_scroll()
+void	terminal_scroll(t_screen *screen)
 {
 	size_t	bytes_copy = (VGA_HEIGHT - 1) * VGA_WIDTH * sizeof(u16);	
-	ft_memcpy((void*)terminal_buffer, (void*)(terminal_buffer + VGA_WIDTH), bytes_copy);
+	ft_memcpy((void*)screen->terminal_buffer, (void*)(screen->terminal_buffer + VGA_WIDTH), bytes_copy);
 
 	size_t	x = 0;
 	while (x < VGA_WIDTH)
 	{
 		size_t	index = (VGA_HEIGHT - 1) * VGA_WIDTH + x;
-		terminal_buffer[index] = vga_entry(' ', terminal_color);
+		screen->terminal_buffer[index] = vga_entry(' ', screen->terminal_color);
 		++x;
 	}
-	terminal_row = VGA_HEIGHT - 1;
-	terminal_column = 0;
+	screen->terminal_row = VGA_HEIGHT - 1;
+	screen->terminal_column = 0;
 }
 
-void	terminal_putchar(char c)
+void	terminal_putchar(t_screen *screen, char c)
 {
 	if (c == NEWLINE)
 	{
-		terminal_row++;
-		terminal_column = 0;
+		screen->terminal_row++;
+		screen->terminal_column = 0;
 
-		if (terminal_row >= VGA_HEIGHT)
-			terminal_scroll();
+		if (screen->terminal_row >= VGA_HEIGHT)
+			terminal_scroll(screen);
 
-		set_cursor(terminal_row, terminal_column);
+		set_cursor(screen->terminal_row, screen->terminal_column);
 	}
 	else
 	{
-		terminal_putentry(c, terminal_color, terminal_column, terminal_row);
-		++terminal_column;
+		terminal_putentry(screen, c, screen->terminal_color, screen->terminal_column, screen->terminal_row);
+		++screen->terminal_column;
 
-		size_t max_col = (terminal_row == 0) ? (VGA_WIDTH - 14) : VGA_WIDTH;
+		size_t max_col = (screen->terminal_row == 0) ? (VGA_WIDTH - 14) : VGA_WIDTH;
 		
-		if (terminal_column >= max_col)
+		if (screen->terminal_column >= max_col)
 		{
-			terminal_column = 0;
-			++terminal_row;
-			if (terminal_row >= VGA_HEIGHT)
-				terminal_scroll();
+			screen->terminal_column = 0;
+			++screen->terminal_row;
+			if (screen->terminal_row >= VGA_HEIGHT)
+				terminal_scroll(screen);
 		}
-		set_cursor(terminal_row, terminal_column);
+		set_cursor(screen->terminal_row, screen->terminal_column);
 	}
 }
 
-void	terminal_write(const char *data, size_t size)
+void	terminal_write(t_screen *screen, const char *data, size_t size)
 {
     for (size_t i = 0; i < size; i++)
-        terminal_putchar(data[i]);
+        terminal_putchar(screen, data[i]);
 }
 
-void	clear_line()
+void	clear_line(t_screen *screen)
 {
 	size_t	x = PROMPT_LENGTH;
 	while (x < VGA_WIDTH)
 	{
-		terminal_putentry(' ', terminal_color, x, terminal_row);
+		terminal_putentry(screen, ' ', screen->terminal_color, x, screen->terminal_row);
 		++x;
 	}
-	terminal_column = PROMPT_LENGTH;
-	set_cursor(terminal_row, terminal_column);
-	print_prompt();
+	screen->terminal_column = PROMPT_LENGTH;
+	set_cursor(screen->terminal_row, screen->terminal_column);
+	print_prompt(screen);
 }
 
-void	handle_ctrl_c()
+void	handle_ctrl_c(t_screen *screen)
 {
-	u8	old_color = terminal_color;
+	u8	old_color = screen->terminal_color;
 
-	terminal_set_color(vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK));	
-	terminal_putentry('^', terminal_color, terminal_column, terminal_row);
-	terminal_column++;
-	terminal_putentry('C', terminal_color, terminal_column, terminal_row);
-	terminal_column++;
+	terminal_set_color(screen, vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK));	
+	terminal_putentry(screen, '^', screen->terminal_color, screen->terminal_column, screen->terminal_row);
+	screen->terminal_column++;
+	terminal_putentry(screen, 'C', screen->terminal_color, screen->terminal_column, screen->terminal_row);
+	screen->terminal_column++;
 	
-	terminal_set_color(old_color);
-	terminal_column = 0;
-	terminal_row++;
+	terminal_set_color(screen, old_color);
+	screen->terminal_column = 0;
+	screen->terminal_row++;
 	
-	if (terminal_row >= VGA_HEIGHT)
-		terminal_scroll();
+	if (screen->terminal_row >= VGA_HEIGHT)
+		terminal_scroll(screen);
 	
-	print_prompt();
+	print_prompt(screen);
 	input_end = PROMPT_LENGTH;
 }
 
-void	handle_backspace()
+void	handle_backspace(t_screen *screen)
 {
-	if (terminal_column > PROMPT_LENGTH)
+	if (screen->terminal_column > PROMPT_LENGTH)
 	{
 		--input_len;
 		input_buffer[input_len] = 0;
 
-		--terminal_column;
-		terminal_putentry(' ', terminal_color, terminal_column, terminal_row);
-		set_cursor(terminal_row, terminal_column);
+		--screen->terminal_column;
+		terminal_putentry(screen, ' ', screen->terminal_color, screen->terminal_column, screen->terminal_row);
+		set_cursor(screen->terminal_row, screen->terminal_column);
 	
-		if (terminal_column < input_end)
-			input_end = terminal_column;
+		if (screen->terminal_column < input_end)
+			input_end = screen->terminal_column;
 	}
 }
 
-void	handle_ctrl_l()
+void	handle_ctrl_l(t_screen *screen)
 {
-	terminal_clear_screen();
-	print_prompt();
+	terminal_clear_screen(screen);
+	print_prompt(screen);
 	input_end = PROMPT_LENGTH;
 }
 
-void	handle_regular_char(char c)
+void	handle_regular_char(t_screen *screen, char c)
 {
 	if (caps_lock && c >= 'a' && c <= 'z')
 		c -= 32;
@@ -232,29 +231,29 @@ void	handle_regular_char(char c)
 	input_buffer[input_len++] = c;
 	input_buffer[input_len] = 0;
 
-	terminal_putchar(c);
+	terminal_putchar(screen, c);
 
-	if (terminal_column > input_end)
-		input_end = terminal_column;
+	if (screen->terminal_column > input_end)
+		input_end = screen->terminal_column;
 }
 
-void	handle_enter()
+void	handle_enter(t_screen *screen)
 {
-	terminal_putchar('\n');
-	execute_command(input_buffer);
+	terminal_putchar(screen, '\n');
+	execute_command(screen, input_buffer);
 	ft_memset(input_buffer, 0, sizeof(input_buffer));
 	input_len = 0;
-	print_prompt();
+	print_prompt(screen);
 	input_end = PROMPT_LENGTH;
 }
 
-void	process_scancode(u8 scancode)
+void	process_scancode(t_screen *screen, u8 scancode)
 {
 	char c;
 	
 	if (scancode == ENTER)
 	{
-		handle_enter();
+		handle_enter(screen);
 		return ;
 	}
 	
@@ -264,12 +263,12 @@ void	process_scancode(u8 scancode)
 		c = scancode_to_ascii[scancode];
 	
 	if (c == BACKSPACE)
-		handle_backspace();
+		handle_backspace(screen);
 	else if (c)
-		handle_regular_char(c);
+		handle_regular_char(screen, c);
 }
 
-void	handle_switch_terminal(u8 scancode)
+void	handle_switch_terminal(t_screen *screen, u8 scancode)
 {
 	if (scancode == ALT_PRESS)
 		alt_pressed = true;
@@ -279,36 +278,36 @@ void	handle_switch_terminal(u8 scancode)
 	else if (alt_pressed && scancode == LEFT_ARROW)
 	{
 		size_t	new_screen = (current_screen == 0) ? NUM_SCREENS - 1 : current_screen - 1;
-		switch_screen(new_screen);
+		switch_screen(screen, new_screen);
 	}
 	else if (alt_pressed && scancode == RIGHT_ARROW)
 	{
 		size_t	new_screen = (current_screen + 1) % NUM_SCREENS;
-		switch_screen(new_screen);
+		switch_screen(screen, new_screen);
 	}
 }
 
-void	arrow_handler(u8 scancode)
+void	arrow_handler(t_screen *screen, u8 scancode)
 {
 	if (scancode == LEFT_ARROW)
 	{
-		if (terminal_column > PROMPT_LENGTH)
+		if (screen->terminal_column > PROMPT_LENGTH)
 		{
-			--terminal_column;
-			set_cursor(terminal_row, terminal_column);
+			--screen->terminal_column;
+			set_cursor(screen->terminal_row, screen->terminal_column);
 		}
 	}
 	else if (scancode == RIGHT_ARROW)
 	{
-		if (terminal_column < input_end && terminal_column < VGA_WIDTH - 1)
+		if (screen->terminal_column < input_end && screen->terminal_column < VGA_WIDTH - 1)
 		{
-			++terminal_column;
-			set_cursor(terminal_row, terminal_column);
+			++screen->terminal_column;
+			set_cursor(screen->terminal_row, screen->terminal_column);
 		}
 	}
 }
 
-void	keyboard_handler_loop()
+void	keyboard_handler_loop(t_screen *screen)
 {
 	while (1)
 	{
@@ -316,17 +315,17 @@ void	keyboard_handler_loop()
 		{
 			u8 scancode = inb(0x60);
 			
-			handle_switch_terminal(scancode);
+			handle_switch_terminal(screen, scancode);
 			if (!alt_pressed && (scancode == RIGHT_ARROW || scancode == LEFT_ARROW))
-				arrow_handler(scancode);
+				arrow_handler(screen, scancode);
 			else if (scancode == CTRL_PRESS)
 				ctrl_pressed = true;
 			else if (scancode == CTRL_RELEASE)
 				ctrl_pressed = false;
 			else if (ctrl_pressed && scancode == KEY_C)
-				handle_ctrl_c();
+				handle_ctrl_c(screen);
 			else if (ctrl_pressed && scancode == KEY_L)
-				handle_ctrl_l();
+				handle_ctrl_l(screen);
 			else if (scancode == SHIFT_LEFT || scancode == SHIFT_RIGHT)
 				shift_pressed = true;
 			else if (scancode == SHIFT_LEFT_R || scancode == SHIFT_RIGHT_R)
@@ -334,84 +333,84 @@ void	keyboard_handler_loop()
 			else if (scancode == CAPS_LOCK)
 				caps_lock = !caps_lock;
 			else if (scancode < 128 && !ctrl_pressed)
-				process_scancode(scancode);
+				process_scancode(screen, scancode);
 		}
 	}
 }
 
-void	terminal_write_string(const char *data)
+void	terminal_write_string(t_screen *screen, const char *data)
 {
 	size_t i = 0;
 	while (data[i])
 	{
 		if (data[i] == '\n')
-			terminal_putchar('\n');
+			terminal_putchar(screen, '\n');
 		else
-			terminal_putchar(data[i]);
+			terminal_putchar(screen, data[i]);
 		i++;
 	}
 }
 
-void	print_prompt()
+void	print_prompt(t_screen *screen)
 {
-	u8 old_color = terminal_color;
-	terminal_set_color(vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
+	u8 old_color = screen->terminal_color;
+	terminal_set_color(screen, vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
 	size_t i = 0;
 	const char *prompt = "kfs -> ";
 	while (prompt[i])
 	{
-		terminal_putchar(prompt[i]);
+		terminal_putchar(screen, prompt[i]);
 		i++;
 	}
-	terminal_set_color(old_color);
-	draw_screen_index();
-	set_cursor(terminal_row, PROMPT_LENGTH);
+	terminal_set_color(screen, old_color);
+	draw_screen_index(screen);
+	set_cursor(screen->terminal_row, PROMPT_LENGTH);
 }
 
-void	save_screen(size_t screen_id) 
+void	save_screen(t_screen *screen, size_t screen_id) 
 {
 	if (screen_id >= NUM_SCREENS)
 		return ;
 
-	ft_memcpy(screens[screen_id].save_buffer, (void*)terminal_buffer,
+	ft_memcpy(screens[screen_id].save_buffer, (void*)screen->terminal_buffer,
 		   VGA_WIDTH * VGA_HEIGHT * sizeof(u16));
 
-	screens[screen_id].save_row = terminal_row;
-	screens[screen_id].save_column = terminal_column;
+	screens[screen_id].save_row = screen->terminal_row;
+	screens[screen_id].save_column = screen->terminal_column;
 	screens[screen_id].save_input_end = input_end;
-	screens[screen_id].save_color = terminal_color;
+	screens[screen_id].save_color = screen->terminal_color;
 }
 
-void	load_screen(size_t screen_id)
+void	load_screen(t_screen *screen, size_t screen_id)
 {
 	if (screen_id >= NUM_SCREENS)
 		return ;
 
-	ft_memcpy((void*)terminal_buffer, screens[screen_id].save_buffer,
+	ft_memcpy((void*)screen->terminal_buffer, screens[screen_id].save_buffer,
 		   VGA_WIDTH * VGA_HEIGHT * sizeof(u16));
 
-	terminal_row = screens[screen_id].save_row;
-	terminal_column = screens[screen_id].save_column;
+	screen->terminal_row = screens[screen_id].save_row;
+	screen->terminal_column = screens[screen_id].save_column;
 	input_end = screens[screen_id].save_input_end;
-	terminal_color = screens[screen_id].save_color;
-	if (terminal_column == 0)
-		terminal_column = PROMPT_LENGTH;
-	set_cursor(terminal_row, terminal_column);
+	screen->terminal_color = screens[screen_id].save_color;
+	if (screen->terminal_column == 0)
+		screen->terminal_column = PROMPT_LENGTH;
+	set_cursor(screen->terminal_row, screen->terminal_column);
 }
 
-void	switch_screen(size_t new_screen_id)
+void	switch_screen(t_screen *screen, size_t new_screen_id)
 {
 	if (new_screen_id >= NUM_SCREENS || new_screen_id == current_screen)
 		return ;
 	
-	save_screen(current_screen);
+	save_screen(screen, current_screen);
 	current_screen = new_screen_id;
-	load_screen(new_screen_id);
+	load_screen(screen, new_screen_id);
 
-	draw_screen_index();
+	draw_screen_index(screen);
 }
 
-void	draw_screen_index()
+void	draw_screen_index(t_screen *screen)
 {
 	const char	*text = "Screen  /  ";
 	size_t		start_x = VGA_WIDTH - 13;
@@ -420,26 +419,28 @@ void	draw_screen_index()
 	for (size_t	index = 0; text[index]; ++index)
 	{
 		if (index == 7)
-			terminal_buffer[start_x + index] = vga_entry('1' + current_screen, color);
+			screen->terminal_buffer[start_x + index] = vga_entry('1' + current_screen, color);
 		else if (index == 9)
-			terminal_buffer[start_x + index] = vga_entry('0' + NUM_SCREENS, color);
+			screen->terminal_buffer[start_x + index] = vga_entry('0' + NUM_SCREENS, color);
 		else
-			terminal_buffer[start_x + index] = vga_entry(text[index], color);
+			screen->terminal_buffer[start_x + index] = vga_entry(text[index], color);
 	}
 }
 
-void	need_help(void)
+void	need_help(t_screen *screen)
 {
-	terminal_set_color(VGA_COLOR_LIGHT_BROWN);
-	printk("If you don't know what to write, try 'help'\n");
-	terminal_set_color(VGA_COLOR_LIGHT_RED2);
+	terminal_set_color(screen, VGA_COLOR_LIGHT_BROWN);
+	printk(screen, "If you don't know what to write, try 'help'\n");
+	terminal_set_color(screen, VGA_COLOR_LIGHT_RED2);
 }
 
-void	kernel_main(void)
+void	kernel_main()
 {
-	terminal_initialize();
+	t_screen	*screen;
+
+	screen = terminal_initialize();
 	gdt_init();
-	need_help();
-	print_prompt();
-	keyboard_handler_loop();
+	need_help(screen);
+	print_prompt(screen);
+	keyboard_handler_loop(screen);
 }
