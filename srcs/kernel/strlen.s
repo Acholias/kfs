@@ -1,10 +1,10 @@
-; ft_strlen
-; size_t	ft_strlen(const char *s)
+; strlen
+; size_t	strlen(const char *s)
 
 section .text
-	global	ft_strlen
+	global	strlen
 
-ft_strlen:
+strlen:
 	push	ebp
 	mov		ebp, esp
 	mov		eax, 0

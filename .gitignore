@@ -1,0 +1,4 @@
+flake.lock
+.build
+*.iso
+.vscode
