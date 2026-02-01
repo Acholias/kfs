@@ -10,7 +10,7 @@ LD = ld
 
 ASMFLAGS = -f elf32
 CFLAGS = -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
-         -nostartfiles -nodefaultlibs -ffreestanding -Wall -Wextra -Werror -c
+         -nostartfiles -nodefaultlibs -ffreestanding -Wall -Wextra -Werror -I includes -c
 LDFLAGS = -m elf_i386 -T $(SRC_DIR)/linker.ld
 
 SRC_DIR = srcs
@@ -23,7 +23,20 @@ ASM_SOURCES =	$(SRC_DIR)/bootload/boot.s \
 				$(SRC_DIR)/bootload/gdt.s \
 				$(SRC_DIR)/kernel/strlen.s
 
-C_SOURCES =	$(SRC_DIR)/kernel/kernel.c
+C_SOURCES =	$(SRC_DIR)/kernel/commands/clear.c \
+			$(SRC_DIR)/kernel/commands/commands.c \
+			$(SRC_DIR)/kernel/terminal/cursor.c \
+			$(SRC_DIR)/kernel/terminal/delete.c \
+			$(SRC_DIR)/kernel/commands/echo.c \
+			$(SRC_DIR)/kernel/commands/gdt.c \
+			$(SRC_DIR)/kernel/libs/io.c \
+			$(SRC_DIR)/kernel/kernel.c \
+			$(SRC_DIR)/kernel/inputs/keyboard.c \
+			$(SRC_DIR)/kernel/libs/libstr.c \
+			$(SRC_DIR)/kernel/printk/printk.c \
+			$(SRC_DIR)/kernel/terminal/terminal.c \
+			$(SRC_DIR)/kernel/terminal/write.c \
+
 
 ASM_OBJECTS = $(patsubst $(SRC_DIR)/%.s,$(BUILD_DIR)/%.o,$(ASM_SOURCES))
 C_OBJECTS = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(C_SOURCES))
