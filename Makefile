@@ -11,7 +11,7 @@ LD = ld
 ASMFLAGS = -f elf32
 CFLAGS = -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
          -nostartfiles -nodefaultlibs -ffreestanding -Wall -Wextra -Werror -I includes -c
-LDFLAGS = -m elf_i386 -T $(SRC_DIR)/linker.ld
+LDFLAGS = -m elf_i386 -T $(SRC_DIR)/bootload/linker.ld
 
 SRC_DIR = srcs
 BUILD_DIR = .build
@@ -29,6 +29,7 @@ C_SOURCES =	$(SRC_DIR)/kernel/commands/clear.c \
 			$(SRC_DIR)/kernel/terminal/delete.c \
 			$(SRC_DIR)/kernel/commands/echo.c \
 			$(SRC_DIR)/kernel/commands/gdt.c \
+			$(SRC_DIR)/kernel/commands/shutdown.c \
 			$(SRC_DIR)/kernel/libs/io.c \
 			$(SRC_DIR)/kernel/kernel.c \
 			$(SRC_DIR)/kernel/inputs/keyboard.c \

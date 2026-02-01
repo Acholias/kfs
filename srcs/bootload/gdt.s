@@ -13,6 +13,7 @@
 BITS	32
 
 global	gdt_flush
+global gdt_start
 
 gdt_flush:
 	mov		eax, [esp + 4]
@@ -29,7 +30,6 @@ gdt_flush:
 
 .flush:
 	ret
-
 
 section .gdt
 ; GDT define

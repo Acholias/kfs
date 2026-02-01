@@ -33,7 +33,18 @@ void	kernel_main(void)
 			{
 				// Write characters
 				if (key_event.ascii != '\0')
-					terminal_putchar(active_terminal, key_event.ascii);
+				{
+					if (keyboard.Lctrl && key_event.key == K_C)
+					{
+						terminal_putstring(active_terminal, "^C\n");
+						if (active_terminal->mode == MODE_TERMINAL)
+							terminal_write_prompt(active_terminal);
+					}
+					else if (keyboard.Lctrl && key_event.key == K_S)
+						command_shutdown();
+					else
+						terminal_putchar(active_terminal, key_event.ascii);
+				}
 				else if (key_event.key == K_ENTER)
 				{
 					if (active_terminal->mode == MODE_TERMINAL)

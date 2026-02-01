@@ -11,6 +11,6 @@ typedef __builtin_va_list	va_list;
 # include "types.h"
 # include "terminal.h"
 
-void	printk(t_terminal *terminal, const char *str, ...);
+int32_t	printk(t_terminal *terminal, const char *str, ...);
 
 #endif

@@ -34,6 +34,8 @@ void	parse_execute_command(t_terminal *terminal)
 		command_echo(terminal, command_buffer + command_name_length);
 	else if (is_str_equals("gdt", command_name))
 		command_gdt(terminal, command_buffer + command_name_length);
+	else if (is_str_equals("shutdown", command_name))
+		command_shutdown();
 	else
 		printk(terminal, "kfs: command '%s' is not found\n", command_name);
 

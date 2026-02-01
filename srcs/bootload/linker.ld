@@ -4,11 +4,9 @@ SECTIONS
 {
 	. = 0x00000800;
 
-	.gdt ALIGN(8) :
+	.gdt ALIGN(4) :
 	{
-		_gdt_start = .;
-		. = . + 56;
-		_gdt_end = .;
+		*(.gdt)
 	}
 
 	. = 0x00100000;
@@ -17,7 +15,7 @@ SECTIONS
 	{
 		*(.multiboot)
 	}
-	
+
 	.text BLOCK(4K) : ALIGN(4K)
 	{
 		*(.text)
