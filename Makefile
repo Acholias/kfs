@@ -1,63 +1,35 @@
-#--- Make flags ---------------------------------------------------------------
-MAKEFLAGS		:= --no-print-directory
-.DEFAULT_GOAL	:= all
-.SECONDEXPANSION:
-
-
 ASM = nasm
 CC = i686-elf-gcc
 LD = ld
 
 ASMFLAGS = -f elf32
 CFLAGS = -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
-         -nostartfiles -nodefaultlibs -ffreestanding -Wall -Wextra -Werror -I includes -c
-LDFLAGS = -m elf_i386 -T $(SRC_DIR)/bootload/linker.ld
+         -nostartfiles -nodefaultlibs -ffreestanding -Wall -Wextra -Werror -c
+LDFLAGS = -m elf_i386 -T $(SRC_DIR)/linker.ld
 
 SRC_DIR = srcs
-BUILD_DIR = .build
-ISO_DIR = .build
+BUILD_DIR = build
+ISO_DIR = iso
 BOOT_DIR = $(ISO_DIR)/boot
 GRUB_DIR = $(BOOT_DIR)/grub
 
-ASM_SOURCES =	$(SRC_DIR)/bootload/boot.s \
-				$(SRC_DIR)/bootload/gdt.s \
-				$(SRC_DIR)/kernel/strlen.s
-
-C_SOURCES =	$(SRC_DIR)/kernel/commands/clear.c \
-			$(SRC_DIR)/kernel/commands/commands.c \
-			$(SRC_DIR)/kernel/terminal/cursor.c \
-			$(SRC_DIR)/kernel/terminal/delete.c \
-			$(SRC_DIR)/kernel/commands/echo.c \
-			$(SRC_DIR)/kernel/commands/gdt.c \
-			$(SRC_DIR)/kernel/commands/shutdown.c \
-			$(SRC_DIR)/kernel/libs/io.c \
-			$(SRC_DIR)/kernel/kernel.c \
-			$(SRC_DIR)/kernel/inputs/keyboard.c \
-			$(SRC_DIR)/kernel/libs/libstr.c \
-			$(SRC_DIR)/kernel/printk/printk.c \
-			$(SRC_DIR)/kernel/terminal/terminal.c \
-			$(SRC_DIR)/kernel/terminal/write.c \
-
+ASM_SOURCES = $(wildcard $(SRC_DIR)/*.s)
+C_SOURCES = $(wildcard $(SRC_DIR)/*.c)
 
 ASM_OBJECTS = $(patsubst $(SRC_DIR)/%.s,$(BUILD_DIR)/%.o,$(ASM_SOURCES))
 C_OBJECTS = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(C_SOURCES))
 OBJECTS = $(ASM_OBJECTS) $(C_OBJECTS)
 
 KERNEL = $(BUILD_DIR)/kernel.bin
-KERNEL_DIRS		:= $(sort $(shell dirname $(ASM_OBJECTS) $(C_OBJECTS) $(KERNEL)))
-
-ISO = kfs.iso
+ISO = kfs-2.iso
 
 all: $(ISO)
-
-$(KERNEL_DIRS):
-	@mkdir -p $@
 
 $(ISO): $(KERNEL)
 	@mkdir -p $(GRUB_DIR)
 	@cp $(KERNEL) $(BOOT_DIR)/kernel.bin
 	@echo '' >> $(GRUB_DIR)/grub.cfg
-	@echo 'menuentry "KFS" {' >> $(GRUB_DIR)/grub.cfg
+	@echo 'menuentry "KFS-2" {' >> $(GRUB_DIR)/grub.cfg
 	@echo '    multiboot /boot/kernel.bin' >> $(GRUB_DIR)/grub.cfg
 	@echo '    boot' >> $(GRUB_DIR)/grub.cfg
 	@echo '}' >> $(GRUB_DIR)/grub.cfg
@@ -69,11 +41,11 @@ $(KERNEL): $(OBJECTS)
 	@$(LD) $(LDFLAGS) -o $@ $^
 	@echo -e "\033[32mKernel compilé : $(KERNEL)\033[0m"
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.s | $$(@D)
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.s
 	@mkdir -p $(BUILD_DIR)
 	@$(ASM) $(ASMFLAGS) $< -o $@
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $$(@D)
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(BUILD_DIR)
 	@$(CC) $(CFLAGS) $< -o $@
 

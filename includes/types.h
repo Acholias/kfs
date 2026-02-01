@@ -1,20 +1,16 @@
 #ifndef TYPES_H
 # define TYPES_H
 
-# define NULL (void *)0
+typedef	unsigned char		u8;
+typedef unsigned short		u16;
+typedef unsigned int		u32;
 
-// Bool
-typedef enum e_bool {
-	false = 0,
-	true = 1
-}	bool;
+typedef unsigned int		size_t;
 
-// Basic types
-typedef unsigned char	uint8_t;
-typedef unsigned short	uint16_t;
-typedef unsigned int	uint32_t;
-typedef char			int8_t;
-typedef short			int16_t;
-typedef int				int32_t;
+typedef char		i8;
+typedef short		i16;
+typedef int			i32;
+
+# define	NULL	(void *)0
 
 #endif
