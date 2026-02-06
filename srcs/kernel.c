@@ -2,13 +2,6 @@
 #include "../includes/io.h"
 #include "../includes/gdt.h"
 
-t_save_screen	screens[NUM_SCREENS];
-
-static bool		shift_pressed =	false;
-static bool		caps_lock =	false;
-static bool		ctrl_pressed = false;
-static bool		alt_pressed = false;
-
 static	char	input_buffer[INPUT_MAX];
 static	size_t	input_len = 0;
 
@@ -53,7 +46,14 @@ t_screen	*terminal_initialize()
 	screen->terminal_buffer = (u16*)VGA_MEMORY;
 	screen->current_screen = 0;
 	screen->input_end = PROMPT_LENGTH;
-	
+
+	screen->sta->caps_lock = false;
+	screen->sta->shift_pressed = false;
+	screen->sta->ctrl_pressed = false;
+	screen->sta->alt_pressed = false;
+
+	ft_memset(screen->screens, 0, sizeof(screen->screens));
+
 	size_t	y = 0;
 	while (y < VGA_HEIGHT)
 	{
@@ -69,11 +69,11 @@ t_screen	*terminal_initialize()
 	print_prompt(screen);
 	for (size_t s = 0; s < NUM_SCREENS; ++s)
 	{
-		screens[s].save_row = 0;
-		screens[s].save_column = 0;
-		screens[s].save_input_end = PROMPT_LENGTH;
-		screens[s].save_color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);	
-		ft_memcpy(screens[s].save_buffer, (void *)screen->terminal_buffer, VGA_WIDTH * VGA_HEIGHT * sizeof(u16));
+		screen->screens[s].save_row = 0;
+		screen->screens[s].save_column = 0;
+		screen->screens[s].save_input_end = PROMPT_LENGTH;
+		screen->screens[s].save_color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);	
+		ft_memcpy(screen->screens[s].save_buffer, (void *)screen->terminal_buffer, VGA_WIDTH * VGA_HEIGHT * sizeof(u16));
 	}
 	return (screen);
 }
@@ -86,7 +86,6 @@ void	terminal_clear_screen(t_screen *screen)
 
     screen->terminal_row = 0;
     screen->terminal_column = 0;
-	screen->terminal_color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);
 }
 
 void	terminal_set_color(t_screen *screen, u8 color)
@@ -138,6 +137,11 @@ void	terminal_putchar(t_screen *screen, char c)
 			terminal_scroll(screen);
 
 		set_cursor(screen->terminal_row, screen->terminal_column);
+	}
+	else if (c == TAB)
+	{
+		screen->terminal_column += 4;
+		printk(screen, "    ");
 	}
 	else
 	{
@@ -215,7 +219,7 @@ void	handle_ctrl_l(t_screen *screen)
 
 void	handle_regular_char(t_screen *screen, char c)
 {
-	if (caps_lock && c >= 'a' && c <= 'z')
+	if (screen->sta->caps_lock && c >= 'a' && c <= 'z')
 		c -= 32;
 
 	input_buffer[input_len++] = c;
@@ -247,7 +251,7 @@ void	process_scancode(t_screen *screen, u8 scancode)
 		return ;
 	}
 	
-	if (shift_pressed)
+	if (screen->sta->shift_pressed)
 		c = scancode_shift[scancode];
 	else
 		c = scancode_to_ascii[scancode];
@@ -261,16 +265,16 @@ void	process_scancode(t_screen *screen, u8 scancode)
 void	handle_switch_terminal(t_screen *screen, u8 scancode)
 {
 	if (scancode == ALT_PRESS)
-		alt_pressed = true;
+		screen->sta->alt_pressed = true;
 	else if (scancode == ALT_RELEASE)
-		alt_pressed = false;
+		screen->sta->alt_pressed = false;
 	
-	else if (alt_pressed && scancode == LEFT_ARROW)
+	else if (screen->sta->alt_pressed && scancode == LEFT_ARROW)
 	{
 		size_t	new_screen = (screen->current_screen == 0) ? NUM_SCREENS - 1 : screen->current_screen - 1;
 		switch_screen(screen, new_screen);
 	}
-	else if (alt_pressed && scancode == RIGHT_ARROW)
+	else if (screen->sta->alt_pressed && scancode == RIGHT_ARROW)
 	{
 		size_t	new_screen = (screen->current_screen + 1) % NUM_SCREENS;
 		switch_screen(screen, new_screen);
@@ -306,23 +310,23 @@ void	keyboard_handler_loop(t_screen *screen)
 			u8 scancode = inb(0x60);
 			
 			handle_switch_terminal(screen, scancode);
-			if (!alt_pressed && (scancode == RIGHT_ARROW || scancode == LEFT_ARROW))
+			if (!screen->sta->alt_pressed && (scancode == RIGHT_ARROW || scancode == LEFT_ARROW))
 				arrow_handler(screen, scancode);
 			else if (scancode == CTRL_PRESS)
-				ctrl_pressed = true;
+				screen->sta->ctrl_pressed = true;
 			else if (scancode == CTRL_RELEASE)
-				ctrl_pressed = false;
-			else if (ctrl_pressed && scancode == KEY_C)
+				screen->sta->ctrl_pressed = false;
+			else if (screen->sta->ctrl_pressed && scancode == KEY_C)
 				handle_ctrl_c(screen);
-			else if (ctrl_pressed && scancode == KEY_L)
+			else if (screen->sta->ctrl_pressed && scancode == KEY_L)
 				handle_ctrl_l(screen);
 			else if (scancode == SHIFT_LEFT || scancode == SHIFT_RIGHT)
-				shift_pressed = true;
+				screen->sta->shift_pressed = true;
 			else if (scancode == SHIFT_LEFT_R || scancode == SHIFT_RIGHT_R)
-				shift_pressed = false;
+				screen->sta->shift_pressed = false;
 			else if (scancode == CAPS_LOCK)
-				caps_lock = !caps_lock;
-			else if (scancode < 128 && !ctrl_pressed)
+				screen->sta->caps_lock = !screen->sta->caps_lock;
+			else if (scancode < 128 && !screen->sta->ctrl_pressed)
 				process_scancode(screen, scancode);
 		}
 	}
@@ -362,13 +366,13 @@ void	save_screen(t_screen *screen, size_t screen_id)
 	if (screen_id >= NUM_SCREENS)
 		return ;
 
-	ft_memcpy(screens[screen_id].save_buffer, (void*)screen->terminal_buffer,
+	ft_memcpy(screen->screens[screen_id].save_buffer, (void*)screen->terminal_buffer,
 		   VGA_WIDTH * VGA_HEIGHT * sizeof(u16));
 
-	screens[screen_id].save_row = screen->terminal_row;
-	screens[screen_id].save_column = screen->terminal_column;
-	screens[screen_id].save_input_end = screen->input_end;
-	screens[screen_id].save_color = screen->terminal_color;
+	screen->screens[screen_id].save_row = screen->terminal_row;
+	screen->screens[screen_id].save_column = screen->terminal_column;
+	screen->screens[screen_id].save_input_end = screen->input_end;
+	screen->screens[screen_id].save_color = screen->terminal_color;
 }
 
 void	load_screen(t_screen *screen, size_t screen_id)
@@ -376,13 +380,13 @@ void	load_screen(t_screen *screen, size_t screen_id)
 	if (screen_id >= NUM_SCREENS)
 		return ;
 
-	ft_memcpy((void*)screen->terminal_buffer, screens[screen_id].save_buffer,
+	ft_memcpy((void*)screen->terminal_buffer, screen->screens[screen_id].save_buffer,
 		   VGA_WIDTH * VGA_HEIGHT * sizeof(u16));
 
-	screen->terminal_row = screens[screen_id].save_row;
-	screen->terminal_column = screens[screen_id].save_column;
-	screen->input_end = screens[screen_id].save_input_end;
-	screen->terminal_color = screens[screen_id].save_color;
+	screen->terminal_row = screen->screens[screen_id].save_row;
+	screen->terminal_column = screen->screens[screen_id].save_column;
+	screen->input_end = screen->screens[screen_id].save_input_end;
+	screen->terminal_color = screen->screens[screen_id].save_color;
 	if (screen->terminal_column == 0)
 		screen->terminal_column = PROMPT_LENGTH;
 	set_cursor(screen->terminal_row, screen->terminal_column);

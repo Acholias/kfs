@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/06 16:13:34 by lumugot           #+#    #+#             */
-/*   Updated: 2026/02/06 16:13:35 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/02/06 16:44:45 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,15 +68,14 @@ enum vga_color
 	VGA_COLOR_WHITE,
 };
 
-typedef	struct s_screen
+typedef struct	s_save_screen
 {
-	u16		*terminal_buffer;
-	size_t	terminal_row;
-	size_t	terminal_column;
-	size_t	current_screen;
-	size_t	input_end;
-	u8		terminal_color;
-}	t_screen;
+	size_t		save_row;
+	size_t		save_column;
+	size_t		save_input_end;
+	u8			save_color;
+	u16			save_buffer[VGA_WIDTH * VGA_HEIGHT];
+}	t_save_screen;
 
 typedef struct	s_term_ctx
 {
@@ -86,14 +85,17 @@ typedef struct	s_term_ctx
 	bool	alt_pressed;
 }	t_term_ctx;
 
-typedef struct	s_save_screen
+typedef	struct s_screen
 {
-	size_t		save_row;
-	size_t		save_column;
-	size_t		save_input_end;
-	u8			save_color;
-	u16			save_buffer[VGA_WIDTH * VGA_HEIGHT];
-}	t_save_screen;
+	u16				*terminal_buffer;
+	size_t			terminal_row;
+	size_t			terminal_column;
+	size_t			current_screen;
+	size_t			input_end;
+	u8				terminal_color;
+	t_term_ctx		*sta;
+	t_save_screen	screens[NUM_SCREENS];
+}	t_screen;
 
 extern	size_t		ft_strlen(const char *str);
 extern	void		*ft_memcpy(void *dest, const void *src, size_t n);
