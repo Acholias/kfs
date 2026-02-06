@@ -6,12 +6,11 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/20 12:13:07 by lumugot           #+#    #+#             */
-/*   Updated: 2026/01/23 17:31:41 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/02/06 16:28:22 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/kernel.h"
-#include "../includes/io.h"
 #include "../includes/gdt.h"
 
 int		ft_strncmp(const char *s1, const char *s2, size_t len)
@@ -34,7 +33,7 @@ size_t	get_cmd(const char *cmd)
 	return (index);
 }
 
-void	execute_command(const char *cmd)
+void	execute_command(t_screen *screen, const char *cmd)
 {
 	size_t	len;
 
@@ -45,19 +44,19 @@ void	execute_command(const char *cmd)
 
 	if (len == 4 && ft_strncmp(cmd,	"help", 4) == 0)
 	{
-		printk("Commands:\n");
-		printk("help         - show this message\n");
-		printk("clear        - clear screen\n");
-		printk("reboot       - reboot machine\n");
-		printk("halt         - stop cpu\n");
-		printk("exit         - exit kernel\n");
-		printk("stack        - print stack\n");
-		printk("gdt          - print gdt\n");
-		printk("Hello there  - print easter egg\n");
+		printk(screen, "Commands:\n");
+		printk(screen, "help         - show this message\n");
+		printk(screen, "clear        - clear screen\n");
+		printk(screen, "reboot       - reboot machine\n");
+		printk(screen, "halt         - stop cpu\n");
+		printk(screen, "exit         - exit kernel\n");
+		printk(screen, "stack        - print stack\n");
+		printk(screen, "gdt          - print gdt\n");
+		printk(screen, "Hello there  - print easter egg\n");
 	}
 	
 	else if (len == 5 && ft_strncmp(cmd, "clear", 5) == 0)
-		terminal_clear_screen();
+		terminal_clear_screen(screen);
 
 	else if (len == 6 && ft_strncmp(cmd, "reboot", 6) == 0)
 		outb(0x64, 0xFE);
@@ -69,19 +68,16 @@ void	execute_command(const char *cmd)
 		outw(0x604, 0x2000);
 
 	else if (len == 3 && ft_strncmp(cmd, "gdt", 3) == 0)
-	{
-		terminal_set_color(VGA_COLOR_WHITE);
-		print_gdt();
-		terminal_set_color(VGA_COLOR_LIGHT_RED2);
-	}
+		print_gdt(screen);
 
 	else if (len == 5 && ft_strncmp(cmd, "stack", 5) == 0)
-	{
-		terminal_set_color(VGA_COLOR_WHITE);
-		print_stack();
-		terminal_set_color(VGA_COLOR_LIGHT_RED2);
-	}
+		print_stack(screen);
 
 	else if (ft_strncmp(cmd, "Hello there", 11) == 0)
-		printk("General Kenobi\n");
+		printk(screen, "General Kenobi\n");
+	else
+	{
+		print_prompt(screen);
+		printk(screen, "Command not found\n");
+	}
 }

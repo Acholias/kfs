@@ -1,18 +1,31 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   kernel.h                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/06 16:13:34 by lumugot           #+#    #+#             */
+/*   Updated: 2026/02/06 16:13:35 by lumugot          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef KERNEL_H
 # define KERNEL_H
 
 # include "types.h"
+# include "io.h"
+# include "stdbool.h"
 
 #if defined(__LINUX__)
 #error "You are not using a cross-compiler, you will most certainly run into trouble"
 #endif
 
-// VGA est la grille pour le protocole video du cpu a l'adresse memoire 0xb8000
 # define VGA_WIDTH		80
 # define VGA_HEIGHT		25
 # define VGA_MEMORY		0xB8000
 
-# define PROMPT_LENGTH	9
+# define PROMPT_LENGTH	7
 
 # define INPUT_MAX		256
 
@@ -32,6 +45,7 @@
 # define NUM_SCREENS	2
 # define NEWLINE		'\n'
 # define BACKSPACE		'\b'
+# define TAB			'\t'
 # define ENTER			0x1C
 
 enum vga_color
@@ -54,48 +68,68 @@ enum vga_color
 	VGA_COLOR_WHITE,
 };
 
-typedef struct	s_screen
+typedef	struct s_screen
+{
+	u16		*terminal_buffer;
+	size_t	terminal_row;
+	size_t	terminal_column;
+	size_t	current_screen;
+	size_t	input_end;
+	u8		terminal_color;
+}	t_screen;
+
+typedef struct	s_term_ctx
+{
+	bool	caps_lock;
+	bool	shift_pressed;
+	bool	ctrl_pressed;
+	bool	alt_pressed;
+}	t_term_ctx;
+
+typedef struct	s_save_screen
 {
 	size_t		save_row;
 	size_t		save_column;
 	size_t		save_input_end;
 	u8			save_color;
 	u16			save_buffer[VGA_WIDTH * VGA_HEIGHT];
-}	t_screen;
+}	t_save_screen;
 
 extern	size_t		ft_strlen(const char *str);
 extern	void		*ft_memcpy(void *dest, const void *src, size_t n);
 extern	void		ft_memset(void *s, int c, size_t n);	
 
 // printk.c
-int		printk(const char *str, ...);
+int			printk(t_screen *screen, const char *str, ...);
 
 // kernel.c
-void	terminal_initialize();
-void	terminal_set_color(u8 color);
-void	set_cursor(u16 row, u16 col);
-void	terminal_putentry(char c, u8 color, size_t x, size_t y);
-void	terminal_clear_screen(void);
-void	terminal_scroll();
-void	terminal_putchar(char c);
-void	terminal_write(const char *data, size_t size);
-void	clear_line();
-void	handle_ctrl_c();
-void	handle_backspace();
-void	handle_ctrl_l();
-void	handle_regular_char(char c);
-void	process_scancode(u8 scancode);
-void	handle_switch_terminal(u8 scancode);
-void	arrow_handler(u8 scancode);
-void	keyboard_handler_loop();
-void	terminal_write_string(const char *data);
-void	print_prompt();
-void	save_screen(size_t screen_id); 
-void	load_screen(size_t screen_id);
-void	switch_screen(size_t new_screen_id);
-void	draw_screen_index();
+t_screen	*terminal_initialize(void);
+void		terminal_clear_screen(t_screen *screen);
+void		terminal_set_color(t_screen *screen, u8 color);
+void		set_cursor(u16 row, u16 col);
+void		terminal_putentry(t_screen *screen, char c, u8 color, size_t x, size_t y);
+void		terminal_scroll(t_screen *screen);
+void		terminal_putchar(t_screen *screen, char c);
+void		terminal_write(t_screen *screen, const char *data, size_t size);
+void		clear_line(t_screen *screen);
+void		handle_ctrl_c(t_screen *screen);
+void		handle_backspace(t_screen *screen);
+void		handle_ctrl_l(t_screen *screen);
+void		handle_regular_char(t_screen *screen, char c);
+void		handle_enter(t_screen *screen);
+void		process_scancode(t_screen *screen, u8 scancode);
+void		handle_switch_terminal(t_screen *screen, u8 scancode);
+void		arrow_handler(t_screen *screen, u8 scancode);
+void		keyboard_handler_loop(t_screen *screen);
+void		terminal_write_string(t_screen *screen, const char *data);
+void		print_prompt(t_screen *screen);
+void		save_screen(t_screen *screen, size_t screen_id);
+void		load_screen(t_screen *screen, size_t screen_id);
+void		switch_screen(t_screen *screen, size_t screen_id);
+void		draw_screen_index(t_screen *screen);
+void		need_help(t_screen *screen);
 
 // shell.c
-void	execute_command(const char *cmd);
+void	execute_command(t_screen *screen, const char *cmd);
 
 #endif

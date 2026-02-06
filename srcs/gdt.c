@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/19 22:12:41 by lumugot           #+#    #+#             */
-/*   Updated: 2026/01/23 16:14:05 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/02/06 15:57:49 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,18 +61,18 @@ void	gdt_init(void)
 	gdt_flush((u32)&gdt_ptr);
 }
 
-void	print_gdt(void)
+void	print_gdt(t_screen *screen)
 {
-	terminal_set_color(VGA_COLOR_LIGHT_CYAN);
-	printk("[GDT] Initialized at 0x%x with %d entries\n", GDT_BASE_ADRESS, GDT_ENTRIES_COUNT);
+	terminal_set_color(screen, VGA_COLOR_LIGHT_CYAN);
+	printk(screen, "[GDT] Initialized at 0x%x with %d entries\n", GDT_BASE_ADRESS, GDT_ENTRIES_COUNT);
 
-	printk("GDT base:  0x%x\n", gdt_ptr.base);
-	printk("GDT limit: 0x%x\n", gdt_ptr.limit);
+	printk(screen, "GDT base:  0x%x\n", gdt_ptr.base);
+	printk(screen, "GDT limit: 0x%x\n", gdt_ptr.limit);
 
-	terminal_set_color(VGA_COLOR_LIGHT_RED2);
+	terminal_set_color(screen, VGA_COLOR_LIGHT_RED2);
 }
 
-void	print_stack(void)
+void	print_stack(t_screen *screen)
 {
 	u32 *ebp;
 	u32 *esp;
@@ -80,15 +80,15 @@ void	print_stack(void)
 	asm volatile("mov %%ebp, %0" : "=r"(ebp));
 	asm volatile("mov %%esp, %0" : "=r"(esp));
 
-	printk("\n=== KERNEL STACK DUMP ===\n");
-	printk("Stack Pointer (ESP): 0x%x\n", (u32)esp);
-	printk("Base Pointer (EBP):  0x%x\n", (u32)ebp);
-	printk("Stack size used:     %d bytes\n\n", (u32)(ebp - esp) * 4);
+	printk(screen, "\n=== KERNEL STACK DUMP ===\n");
+	printk(screen, "Stack Pointer (ESP): 0x%x\n", (u32)esp);
+	printk(screen, "Base Pointer (EBP):  0x%x\n", (u32)ebp);
+	printk(screen, "Stack size used:     %d bytes\n\n", (u32)(ebp - esp) * 4);
 
-	printk("Stack contents (16 most recent values):\n");
-	printk("Address      | Offset | Value\n");
-	printk("-------------|--------|----------\n");
+	printk(screen, "Stack contents (16 most recent values):\n");
+	printk(screen, "Address      | Offset | Value\n");
+	printk(screen, "-------------|--------|----------\n");
 
 	for (int i = 0; i < 16 && (esp + i) <= ebp; i++)
-		printk("0x%x | +%d | 0x%x\n", (u32)(esp + i), i * 4, *(esp + i));
+		printk(screen, "0x%x | +%d | 0x%x\n", (u32)(esp + i), i * 4, *(esp + i));
 } 
