@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/06 16:13:34 by lumugot           #+#    #+#             */
-/*   Updated: 2026/02/06 16:44:45 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/02/08 13:44:06 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,10 @@
 
 #if defined(__LINUX__)
 #error "You are not using a cross-compiler, you will most certainly run into trouble"
+#endif
+
+#if defined(__i386__)
+#error "This tutorial needs to be compiled with a ix86-elf compiler"
 #endif
 
 # define VGA_WIDTH		80
@@ -73,8 +77,10 @@ typedef struct	s_save_screen
 	size_t		save_row;
 	size_t		save_column;
 	size_t		save_input_end;
+	size_t		save_input_len;
 	u8			save_color;
 	u16			save_buffer[VGA_WIDTH * VGA_HEIGHT];
+	char		save_input_buffer[INPUT_MAX];
 }	t_save_screen;
 
 typedef struct	s_term_ctx
@@ -92,6 +98,8 @@ typedef	struct s_screen
 	size_t			terminal_column;
 	size_t			current_screen;
 	size_t			input_end;
+	size_t			input_len;
+	char			input_buffer[INPUT_MAX];
 	u8				terminal_color;
 	t_term_ctx		*sta;
 	t_save_screen	screens[NUM_SCREENS];

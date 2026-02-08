@@ -2,9 +2,6 @@
 #include "../includes/io.h"
 #include "../includes/gdt.h"
 
-static	char	input_buffer[INPUT_MAX];
-static	size_t	input_len = 0;
-
 static const char scancode_to_ascii[128] = {
     0,27,'1','2','3','4','5','6','7','8',
     '9','0','-','=','\b','\t',
@@ -46,6 +43,7 @@ t_screen	*terminal_initialize()
 	screen->terminal_buffer = (u16*)VGA_MEMORY;
 	screen->current_screen = 0;
 	screen->input_end = PROMPT_LENGTH;
+	screen->input_len = 0;
 
 	screen->sta->caps_lock = false;
 	screen->sta->shift_pressed = false;
@@ -73,7 +71,9 @@ t_screen	*terminal_initialize()
 		screen->screens[s].save_column = 0;
 		screen->screens[s].save_input_end = PROMPT_LENGTH;
 		screen->screens[s].save_color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);	
+		screen->screens[s].save_input_len = 0;
 		ft_memcpy(screen->screens[s].save_buffer, (void *)screen->terminal_buffer, VGA_WIDTH * VGA_HEIGHT * sizeof(u16));
+		ft_memcpy(screen->screens[s].save_input_buffer, (void *)screen->input_buffer, VGA_WIDTH * VGA_HEIGHT * sizeof(u16));
 	}
 	return (screen);
 }
@@ -197,8 +197,8 @@ void	handle_backspace(t_screen *screen)
 {
 	if (screen->terminal_column > PROMPT_LENGTH)
 	{
-		--input_len;
-		input_buffer[input_len] = 0;
+		--screen->input_len;
+		screen->input_buffer[screen->input_len] = 0;
 
 		--screen->terminal_column;
 		terminal_putentry(screen, ' ', screen->terminal_color, screen->terminal_column, screen->terminal_row);
@@ -222,8 +222,8 @@ void	handle_regular_char(t_screen *screen, char c)
 	if (screen->sta->caps_lock && c >= 'a' && c <= 'z')
 		c -= 32;
 
-	input_buffer[input_len++] = c;
-	input_buffer[input_len] = 0;
+	screen->input_buffer[screen->input_len++] = c;
+	screen->input_buffer[screen->input_len] = 0;
 
 	terminal_putchar(screen, c);
 
@@ -234,9 +234,9 @@ void	handle_regular_char(t_screen *screen, char c)
 void	handle_enter(t_screen *screen)
 {
 	terminal_putchar(screen, '\n');
-	execute_command(screen, input_buffer);
-	ft_memset(input_buffer, 0, sizeof(input_buffer));
-	input_len = 0;
+	execute_command(screen, screen->input_buffer);
+	ft_memset(screen->input_buffer, 0, sizeof(screen->input_buffer));
+	screen->input_len = 0;
 	print_prompt(screen);
 	screen->input_end = PROMPT_LENGTH;
 }
