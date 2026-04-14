@@ -129,6 +129,88 @@ Cela évite l'exécution d'instructions invalides.
 ---
 
 
+## 2. ft_strlen
+
+### 📌 Prototype
+```c
+size_t ft_strlen(const char *s);
+```
+
+### 🎯 Fonction
+Calcule la longueur d'une chaîne de caractères (nombre de caractères avant `\0`).
+
+### 🔍 Code complet
+```asm
+global  ft_strlen
+
+ft_strlen:
+    push    ebp                ; Sauvegarde le base pointer
+    mov     ebp, esp           ; Établit le stack frame
+    mov     eax, 0             ; Compteur = 0
+    mov     edi, [ebp + 8]     ; edi = pointeur sur la chaîne
+
+.loop:
+    cmp     byte [edi + eax], 0  ; Compare avec '\0'
+    je      .end                 ; Si '\0', termine
+    inc     eax                  ; Compteur++
+    jmp     .loop                ; Continue
+
+.end:
+    pop     ebp                ; Restaure ebp
+    ret                        ; Retourne (eax contient la longueur)
+```
+
+### 📖 Explication détaillée
+
+#### Setup et initialisation
+```asm
+push    ebp
+mov     ebp, esp
+mov     eax, 0             ; Le compteur commence à 0
+mov     edi, [ebp + 8]     ; edi = paramètre 's'
+```
+
+`eax` servira de compteur et contiendra la valeur de retour.
+
+#### Boucle de comptage
+```asm
+.loop:
+    cmp     byte [edi + eax], 0  ; Compare l'octet à l'index eax avec 0
+    je      .end                 ; Si c'est '\0', on a fini
+    inc     eax                  ; Sinon, on incrémente le compteur
+    jmp     .loop                ; Et on continue
+```
+
+**Détail de `byte [edi + eax]` :**
+- `edi` contient l'adresse de base de la chaîne
+- `eax` est l'index courant
+- `byte` indique qu'on lit 1 octet
+- On accède donc à `s[eax]`
+
+Équivalent C :
+```c
+size_t len = 0;
+while (s[len] != '\0') {
+    len++;
+}
+return len;
+```
+
+#### Retour
+```asm
+.end:
+    pop     ebp
+    ret
+```
+La valeur dans `eax` (le compteur) est automatiquement retournée.
+
+### 💡 Utilisation
+Cette fonction est utilisée partout où on a besoin de connaître la longueur d'une chaîne :
+```c
+void terminal_write_string(const char *data)
+{
+    terminal_write(data, ft_strlen(data));
+}
 
 ## Control
 key combinaison | action                  |
