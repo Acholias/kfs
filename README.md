@@ -6,7 +6,7 @@ Ce document explique en détail les différentes fonctions assembleur utilisées
 
 ## 📋 Table des matières
 1. [Bootloader (boot.asm)](#1-bootloader-bootasm)
-2. [ft_strlen](#3-ft_strlen)
+2. [ft_strlen](#2-ft_strlen)
 
 ---
 
@@ -190,10 +190,11 @@ mov     edi, [ebp + 8]     ; edi = paramètre 's'
 Équivalent C :
 ```c
 size_t len = 0;
-while (s[len] != '\0') {
+while (s[len] != '\0')
+{
     len++;
 }
-return len;
+return (len);
 ```
 
 #### Retour
@@ -206,13 +207,15 @@ La valeur dans `eax` (le compteur) est automatiquement retournée.
 
 ### 💡 Utilisation
 Cette fonction est utilisée partout où on a besoin de connaître la longueur d'une chaîne :
+
 ```c
 void terminal_write_string(const char *data)
 {
     terminal_write(data, ft_strlen(data));
 }
+```
 
-## Control
+## Control in terminal
 key combinaison | action                  |
 ----------------|-------------------------|
 L-CTRL + TAB    | Switch terminal         |
@@ -223,8 +226,10 @@ L-CTRL + S      | Shutdown                |
 L-SHIFT + TAB   | Switch terminal mode    |
 
 
-## Commands
+## Commands (Shell)
 command | action                    |
 --------|---------------------------|
 clear   | Clear terminal            |
 echo    | Basic echo with -n option |
+Shutdown| basic command like exit   |
+gdt     | print gdt                 |
