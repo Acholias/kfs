@@ -7,15 +7,31 @@ Ce document explique en détail les différentes fonctions assembleur utilisées
 ---
 
 ## 📋 Table des matières
-1. [Bootloader (boot.asm)](#1-bootloader-bootasm)
-2. [ft_strlen](#2-ft_strlen)
-3. [GDT (gdt.s)](#3-gdt)
-4. [Raccourcis clavier du terminal](#4-raccourcis-clavier-du-terminal)
-5. [Commandes du shell](#5-commandes-du-shell)
+1. [Lancement du kernel](#1-Lancement-du-kernel)
+2. [Bootloader](#2-bootloader-bootasm)
+3. [ft_strlen](#3-ft_strlen)
+4. [GDT (gdt.s)](#4-gdt-gdts)
+5. [Raccourcis clavier du terminal](#5-raccourcis-clavier-du-terminal)
+6. [Commandes du shell](#6-commandes-du-shell)
 
 ---
 
-## 1. Bootloader (boot.asm)
+## 1. Lancement du kernel
+
+### Compilation
+```bash
+nix develop
+make
+```
+
+### Lancement
+```bash
+make run
+```
+
+---
+
+## 2. Bootloader (boot.asm)
 
 ### 📌 Vue d'ensemble
 Le bootloader est le point d'entrée de notre kernel. Il contient le **header Multiboot** compatible avec GRUB et initialise l'environnement d'exécution avant de transférer le contrôle au code C.
@@ -134,7 +150,7 @@ Cela évite l'exécution d'instructions invalides.
 ---
 
 
-## 2. ft_strlen
+## 3. ft_strlen
 
 ### 📌 Prototype
 ```c
@@ -220,7 +236,7 @@ void terminal_write_string(const char *data)
 }
 ```
 
-## 3. GDT (gdt.s)
+## 4. GDT (gdt.s)
 
 ### 📌 Vue d'ensemble
 La **Global Descriptor Table (GDT)** décrit les segments de mémoire utilisés par le processeur en mode protégé.  
@@ -389,7 +405,7 @@ Au démarrage du noyau :
 
 ---
 
-## 4. Raccourcis clavier du terminal
+## 5. Raccourcis clavier du terminal
 
 Ces raccourcis permettent de contrôler facilement les différents terminaux virtuels et la navigation dans l'historique.
 
@@ -406,7 +422,7 @@ Ces raccourcis permettent de contrôler facilement les différents terminaux vir
 
 ---
 
-## 5. Commandes du shell
+## 6. Commandes du shell
 
 Le shell intégré permet d'exécuter quelques commandes de base :
 

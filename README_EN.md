@@ -7,15 +7,31 @@ This document explains in detail the different assembly functions used in the KF
 ---
 
 ## 📋 Table of contents
-1. [Bootloader (boot.asm)](#1-bootloader-bootasm)
-2. [ft_strlen](#2-ft_strlen)
-3. [GDT (gdt.s)](#3-gdt-gdts)
-4. [Terminal keyboard shortcuts](#4-terminal-keyboard-shortcuts)
-5. [Shell commands](#5-shell-commands)
+1. [Run the kernel](#1-Run-the-kernel)
+2. [Bootloader (boot.asm)](#2-bootloader-bootasm)
+3. [ft_strlen](#3-ft_strlen)
+4. [GDT (gdt.s)](#4-gdt-gdts)
+5. [Terminal keyboard shortcuts](#5-terminal-keyboard-shortcuts)
+6. [Shell commands](#6-shell-commands)
 
 ---
 
-## 1. Bootloader (boot.asm)
+## 1. Run the kernel
+
+### Build
+```bash
+nix develop
+make
+```
+
+### Run
+```bash
+make run
+```
+
+---
+
+## 2. Bootloader (boot.asm)
 
 ### 📌 Overview
 The bootloader is the entry point of our kernel. It contains the **Multiboot header** compatible with GRUB and initializes the execution environment before transferring control to the C code.
@@ -133,7 +149,7 @@ This avoids executing invalid instructions.
 
 ---
 
-## 2. ft_strlen
+## 3. ft_strlen
 
 ### 📌 Prototype
 ```c
@@ -221,7 +237,7 @@ void terminal_write_string(const char *data)
 
 ---
 
-## 3. GDT (gdt.s)
+## 4. GDT (gdt.s)
 
 ### 📌 Overview
 The **Global Descriptor Table (GDT)** describes the memory segments used by the CPU in protected mode.  
@@ -390,7 +406,7 @@ At kernel startup:
 
 ---
 
-## 4. Terminal keyboard shortcuts
+## 5. Terminal keyboard shortcuts
 
 These shortcuts make it easy to control the different virtual terminals and navigate inside them.
 
@@ -407,7 +423,7 @@ These shortcuts make it easy to control the different virtual terminals and navi
 
 ---
 
-## 5. Shell commands
+## 6. Shell commands
 
 The built-in shell lets you run a few basic commands:
 
