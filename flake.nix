@@ -1,7 +1,7 @@
 {
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "https://github.com/NixOS/nixpkgs/archive/029dea9aaacf.tar.gz";
   };
   outputs = inputs:
     inputs.flake-utils.lib.eachDefaultSystem (system:
