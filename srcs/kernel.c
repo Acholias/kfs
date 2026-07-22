@@ -1,5 +1,5 @@
 #include "../includes/kernel.h"
-#include "../includes/stdbool.h"
+#include "../includes/bool.h"
 #include "../includes/io.h"
 #include "../includes/gdt.h"
 
@@ -437,8 +437,8 @@ void	need_help(void)
 
 void	kernel_main(void)
 {
-	terminal_initialize();
 	gdt_init();
+	terminal_initialize();
 	need_help();
 	print_prompt();
 	keyboard_handler_loop();

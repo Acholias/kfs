@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/20 12:13:07 by lumugot           #+#    #+#             */
-/*   Updated: 2026/01/23 17:31:41 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/07/22 23:10:25 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ void	execute_command(const char *cmd)
 		printk("Hello there  - print easter egg\n");
 	}
 	
-	else if (len == 5 && ft_strncmp(cmd, "clear", 5) == 0)
+	else if ((len == 5 && ft_strncmp(cmd, "clear", 5) == 0) || (len == 1 && ft_strncmp(cmd, "c", len) == 0))
 		terminal_clear_screen();
 
 	else if (len == 6 && ft_strncmp(cmd, "reboot", 6) == 0)
