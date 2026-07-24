@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   kernel.h                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/07/24 21:10:49 by lumugot           #+#    #+#             */
+/*   Updated: 2026/07/24 21:11:04 by lumugot          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef KERNEL_H
 # define KERNEL_H
 
@@ -12,7 +24,7 @@
 # define VGA_HEIGHT		25
 # define VGA_MEMORY		0xB8000
 
-# define PROMPT_LENGTH	9
+# define PROMPT_LENGTH	12
 
 # define INPUT_MAX		256
 

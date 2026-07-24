@@ -1,23 +1,35 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   kernel.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/07/24 20:11:04 by lumugot           #+#    #+#             */
+/*   Updated: 2026/07/24 20:46:53 by lumugot          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/kernel.h"
 #include "../includes/bool.h"
 #include "../includes/io.h"
 #include "../includes/gdt.h"
 
-size_t			terminal_row = 0;
-size_t			terminal_column = 0;
-u8				terminal_color = 0;
-volatile u16	*terminal_buffer = 0;
-size_t			current_screen = 0;
-t_screen		screens[NUM_SCREENS];
-size_t			input_end = PROMPT_LENGTH;
+size_t				terminal_row = 0;
+size_t				terminal_column = 0;
+u8					terminal_color = 0;
+volatile u16		*terminal_buffer = 0;
+size_t				current_screen = 0;
+t_screen			screens[NUM_SCREENS];
+size_t				input_end = PROMPT_LENGTH;
 
-static bool		shift_pressed =	false;
-static bool		caps_lock =	false;
-static bool		ctrl_pressed = false;
-static bool		alt_pressed = false;
+static	bool		shift_pressed =	false;
+static	bool		caps_lock =	false;
+static	bool		ctrl_pressed = false;
+static	bool		alt_pressed = false;
 
-static	char	input_buffer[INPUT_MAX];
-static	size_t	input_len = 0;
+static	char		input_buffer[INPUT_MAX];
+static	size_t		input_len = 0;
 
 static const char scancode_to_ascii[128] = {
     0,27,'1','2','3','4','5','6','7','8',
@@ -357,7 +369,7 @@ void	print_prompt()
 	u8 old_color = terminal_color;
 	terminal_set_color(vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
 	size_t i = 0;
-	const char *prompt = "kfs-2 -> ";
+	const char *prompt = "Soliacha -> ";
 	while (prompt[i])
 	{
 		terminal_putchar(prompt[i]);

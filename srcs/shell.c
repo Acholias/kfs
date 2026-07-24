@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/20 12:13:07 by lumugot           #+#    #+#             */
-/*   Updated: 2026/07/22 23:10:25 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/07/24 21:09:11 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,27 @@ size_t	get_cmd(const char *cmd)
 	return (index);
 }
 
+void	print_helper(void)
+{
+	terminal_set_color(VGA_COLOR_LIGHT_BROWN);
+	printk("Commands:\n");
+	printk("help         - show this message\n");
+	printk("clear        - clear screen\n");
+	printk("reboot       - reboot machine\n");
+	printk("halt         - stop cpu\n");
+	printk("exit         - exit kernel\n");
+	printk("stack        - print stack\n");
+	printk("gdt          - print gdt\n");
+	terminal_set_color(VGA_COLOR_LIGHT_RED2);
+}
+
+void	invalid_command(const char *cmd)
+{
+	terminal_set_color(VGA_COLOR_DARK_GREY);
+	printk("Soliacha: Command not found: %s\n", cmd);
+	terminal_set_color(VGA_COLOR_LIGHT_RED2);
+}
+
 void	execute_command(const char *cmd)
 {
 	size_t	len;
@@ -42,20 +63,9 @@ void	execute_command(const char *cmd)
 		return ;
 		
 	len = get_cmd(cmd);
-
 	if (len == 4 && ft_strncmp(cmd,	"help", 4) == 0)
-	{
-		printk("Commands:\n");
-		printk("help         - show this message\n");
-		printk("clear        - clear screen\n");
-		printk("reboot       - reboot machine\n");
-		printk("halt         - stop cpu\n");
-		printk("exit         - exit kernel\n");
-		printk("stack        - print stack\n");
-		printk("gdt          - print gdt\n");
-		printk("Hello there  - print easter egg\n");
-	}
-	
+		print_helper();
+
 	else if ((len == 5 && ft_strncmp(cmd, "clear", 5) == 0) || (len == 1 && ft_strncmp(cmd, "c", len) == 0))
 		terminal_clear_screen();
 
@@ -82,6 +92,6 @@ void	execute_command(const char *cmd)
 		terminal_set_color(VGA_COLOR_LIGHT_RED2);
 	}
 
-	else if (ft_strncmp(cmd, "Hello there", 11) == 0)
-		printk("General Kenobi\n");
+	else
+		invalid_command(cmd);
 }
