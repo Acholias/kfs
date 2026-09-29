@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/24 21:10:49 by lumugot           #+#    #+#             */
-/*   Updated: 2026/07/24 21:11:04 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/09/29 22:16:09 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@
 # define NEWLINE		'\n'
 # define BACKSPACE		'\b'
 # define ENTER			0x1C
+# define KEY_TAB			0x0F
 
 enum vga_color
 {
@@ -65,6 +66,12 @@ enum vga_color
 	VGA_COLOR_LIGHT_BROWN,
 	VGA_COLOR_WHITE,
 };
+
+typedef enum e_layout
+{
+	LAYOUT_QWERTY,
+	LAYOUT_AZERTY
+}	t_layout;
 
 typedef struct	s_screen
 {
@@ -106,8 +113,5 @@ void	save_screen(size_t screen_id);
 void	load_screen(size_t screen_id);
 void	switch_screen(size_t new_screen_id);
 void	draw_screen_index();
-
-// shell.c
-void	execute_command(const char *cmd);
 
 #endif

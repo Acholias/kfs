@@ -6,11 +6,12 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/24 20:11:04 by lumugot           #+#    #+#             */
-/*   Updated: 2026/09/04 20:30:45 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/09/29 22:37:40 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/kernel.h"
+#include "../includes/shell.h"
 #include "../includes/bool.h"
 #include "../includes/io.h"
 #include "../includes/gdt.h"
@@ -31,24 +32,46 @@ static	bool		alt_pressed = false;
 static	char		input_buffer[INPUT_MAX];
 static	size_t		input_len = 0;
 
-static const char scancode_to_ascii[128] = {
-    0,27,'1','2','3','4','5','6','7','8',
-    '9','0','-','=','\b','\t',
-    'q','w','e','r','t','y','u','i','o','p',
-    '[',']',0,0,
-    'a','s','d','f','g','h','j','k','l',';',
-    '\'','`',0,'\\','z','x','c','v','b','n',
-    'm',',','.','/',0,'*',0,' ',0,0
+static t_layout current_layout = LAYOUT_AZERTY;
+
+static const char qwerty_to_ascii[128] = {
+	0,27,'1','2','3','4','5','6','7','8',
+	'9','0','-','=','\b','\t',
+	'q','w','e','r','t','y','u','i','o','p',
+	'[',']',0,0,
+	'a','s','d','f','g','h','j','k','l',';',
+	'\'','`',0,'\\','z','x','c','v','b','n',
+	'm',',','.','/',0,'*',0,' ',0,0
 };
 
-static const char scancode_shift[128] = {
-    0, 27, '!', '@', '#', '$', '%', '^', '&', '*',
-    '(', ')', '_', '+', '\b', '\t',
-    'Q','W','E','R','T','Y','U','I','O','P',
-    '{','}',0,0,
-    'A','S','D','F','G','H','J','K','L',':',
-    '"','~',0,'|','Z','X','C','V','B','N',
-    'M','<','>','?',0,'*',0,' '
+static const char qwerty_shift[128] = {
+	0, 27, '!', '@', '#', '$', '%', '^', '&', '*',
+	'(', ')', '_', '+', '\b', '\t',
+	'Q','W','E','R','T','Y','U','I','O','P',
+	'{','}',0,0,
+	'A','S','D','F','G','H','J','K','L',':',
+	'"','~',0,'|','Z','X','C','V','B','N',
+	'M','<','>','?',0,'*',0,' '
+};
+
+static const char azerty_to_ascii[128] = {
+	0, 27, '&', '\x82', '"', '\'', '(', '-', '\x8A', '_',
+	'\x87', '\x85', ')', '=', '\b', '\t',
+	'a', 'z', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
+	'^', '$', 0, 0,
+	'q', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm',
+	'\x97', '\xFD', 0, '*', 'w', 'x', 'c', 'v', 'b', 'n',
+	',', ';', ':', '!', 0, '*', 0, ' ', 0, 0
+};
+
+static const char azerty_shift[128] = {
+	0, 27, '1', '2', '3', '4', '5', '6', '7', '8',
+	'9', '0', '\xF8', '+', '\b', '\t',
+	'A', 'Z', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P',
+	'^', '$', 0, 0,
+	'Q', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M',
+	'%', '\xFD', 0, '*', 'W', 'X', 'C', 'V', 'B', 'N',
+	'?', '.', '/', '\xA7', 0, '*', 0, ' '
 };
 
 
@@ -208,7 +231,9 @@ void	handle_ctrl_c()
 	
 	if (terminal_row >= VGA_HEIGHT)
 		terminal_scroll();
-	
+
+	ft_memset(input_buffer, 0, sizeof(input_buffer));
+	input_len = 0;
 	print_prompt();
 	input_end = PROMPT_LENGTH;
 }
@@ -260,6 +285,30 @@ void	handle_enter()
 	input_end = PROMPT_LENGTH;
 }
 
+char	scancode_to_char(u8 scancode)
+{
+	const char	*table;
+
+	if (current_layout == LAYOUT_AZERTY)
+		table = shift_pressed ? azerty_shift : azerty_to_ascii;
+	else
+		table = shift_pressed ? qwerty_shift : qwerty_to_ascii;
+	return (table[scancode]);
+}
+
+void	toggle_layout(void)
+{
+	current_layout = (current_layout == LAYOUT_AZERTY) ? LAYOUT_QWERTY : LAYOUT_AZERTY;
+	terminal_set_color(VGA_COLOR_BLUE);	
+	printk("\n\n[layout] -> %s\n\n", current_layout == LAYOUT_AZERTY ? "azerty" : "qwerty");
+	terminal_set_color(VGA_COLOR_LIGHT_RED2);
+	
+	ft_memset(input_buffer, 0, sizeof(input_buffer));
+	input_len = 0;
+	print_prompt();
+	input_end = PROMPT_LENGTH;
+}
+
 void	process_scancode(u8 scancode)
 {
 	char c;
@@ -270,10 +319,7 @@ void	process_scancode(u8 scancode)
 		return ;
 	}
 	
-	if (shift_pressed)
-		c = scancode_shift[scancode];
-	else
-		c = scancode_to_ascii[scancode];
+	c = scancode_to_char(scancode);
 	
 	if (c == BACKSPACE)
 		handle_backspace();
@@ -339,6 +385,8 @@ void	keyboard_handler_loop()
 				handle_ctrl_c();
 			else if (ctrl_pressed && scancode == KEY_L)
 				handle_ctrl_l();
+			else if (shift_pressed && scancode == KEY_TAB)
+					toggle_layout();
 			else if (scancode == SHIFT_LEFT || scancode == SHIFT_RIGHT)
 				shift_pressed = true;
 			else if (scancode == SHIFT_LEFT_R || scancode == SHIFT_RIGHT_R)
@@ -443,15 +491,38 @@ void	draw_screen_index()
 void	need_help(void)
 {
 	terminal_set_color(VGA_COLOR_LIGHT_BROWN);
-	printk("If you don't know what to write, try 'help'\n");
+	printk("If you don't know what to write, try '--help'\n");
 	terminal_set_color(VGA_COLOR_LIGHT_RED2);
 }
 
-void	kernel_main(void)
+extern u32	_kernel_end;
+# include "../includes/pmm.h"
+# include "../includes/multiboot.h"
+
+t_pmm	*get_pmm(void)
 {
+	static	t_pmm	pmm;
+
+	return (&pmm);
+}
+
+void	kernel_main(u32 magic, t_multiboot_info *mbi)
+{
+	(void)magic;
+	(void)mbi;
+	// t_pmm	*pmm;
+	//
+	// if (magic != MULTIBOOT_MAGIC)
+	// {
+	// 	asm volatile ("cli; hlt");
+	// }
 	gdt_init();
 	terminal_initialize();
 	need_help();
 	print_prompt();
+	
+	// pmm = get_pmm();
+	// pmm_init(pmm, mbi, (u32)&_kernel_end);
+
 	keyboard_handler_loop();
 }

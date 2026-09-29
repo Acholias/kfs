@@ -6,13 +6,13 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/20 12:13:07 by lumugot           #+#    #+#             */
-/*   Updated: 2026/07/24 21:09:11 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/09/29 23:07:31 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/kernel.h"
-#include "../includes/io.h"
-#include "../includes/gdt.h"
+#include "../../includes/kernel.h"
+#include "../../includes/io.h"
+#include "../../includes/gdt.h"
 
 int		ft_strncmp(const char *s1, const char *s2, size_t len)
 {
@@ -63,7 +63,7 @@ void	execute_command(const char *cmd)
 		return ;
 		
 	len = get_cmd(cmd);
-	if (len == 4 && ft_strncmp(cmd,	"help", 4) == 0)
+	if (len == 6 && ft_strncmp(cmd,	"--help", 6) == 0)
 		print_helper();
 
 	else if ((len == 5 && ft_strncmp(cmd, "clear", 5) == 0) || (len == 1 && ft_strncmp(cmd, "c", len) == 0))

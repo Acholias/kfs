@@ -1,29 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   types.h                                            :+:      :+:    :+:   */
+/*   shell.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/24 21:10:51 by lumugot           #+#    #+#             */
-/*   Updated: 2026/09/10 09:51:41 by lumugot          ###   ########.fr       */
+/*   Created: 2026/09/29 21:53:17 by lumugot           #+#    #+#             */
+/*   Updated: 2026/09/29 21:55:32 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef TYPES_H
-# define TYPES_H
+#include "types.h"
+#include "bool.h"
 
-typedef	unsigned char		u8;
-typedef unsigned short		u16;
-typedef unsigned int		u32;
-typedef unsigned long long	u64;
-
-typedef unsigned int		size_t;
-
-typedef char		i8;
-typedef short		i16;
-typedef int			i32;
-
-# define	NULL	(void *)0
-
-#endif
+void	execute_command(const char *cmd);
