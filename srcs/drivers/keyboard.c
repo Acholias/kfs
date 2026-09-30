@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/30 15:38:23 by lumugot           #+#    #+#             */
-/*   Updated: 2026/09/30 16:33:01 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/09/30 18:42:51 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ static const t_keymap	keymaps[LAYOUT_COUNT] = {
 };
 
 static t_kb_state	kb = {
-	.layout = LAYOUT_QWERTY,
+	.layout = LAYOUT_AZERTY,
 	.input_end = PROMPT_LENGTH
 };
 
@@ -91,7 +91,13 @@ const char	*keyboard_get_input_buffer(void)
 void	keyboard_toggle_layout(void)
 {
 	kb.layout = (kb.layout == LAYOUT_QWERTY) ? LAYOUT_AZERTY : LAYOUT_QWERTY;
-	printk("\n[Layout] %s\n", kb.layout == LAYOUT_QWERTY ? "QWERTY" : "AZERTY");
+	
+	terminal_set_color(VGA_COLOR_LIGHT_BLUE);
+	printk("\n\n[Keyboard Language] -> %s \n\n", kb.layout == LAYOUT_QWERTY ? "QWERTY" : "AZERTY");
+	terminal_set_color(VGA_COLOR_LIGHT_RED2);
+
+	keyboard_reset_input();
+	print_prompt();
 }
 
 static char	scancode_to_char(u8 scancode)
