@@ -6,12 +6,12 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/19 22:12:41 by lumugot           #+#    #+#             */
-/*   Updated: 2026/01/23 16:14:05 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/09/30 16:13:12 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/gdt.h"
-#include "../includes/kernel.h"
+#include "../../includes/gdt.h"
+#include "../../includes/kernel.h"
 
 t_gdt_entry	*gdt = (t_gdt_entry *)GDT_BASE_ADRESS;
 t_gdt_ptr	gdt_ptr;

@@ -6,12 +6,12 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/24 21:05:31 by lumugot           #+#    #+#             */
-/*   Updated: 2026/07/24 21:05:54 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/09/30 16:14:41 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/kernel.h"
-#include "../includes/vargs.h"
+#include "../../includes/kernel.h"
+#include "../../includes/vargs.h"
 
 int	putnbr_base(unsigned long num, int base, int uppercase)
 {

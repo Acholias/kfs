@@ -14,16 +14,20 @@ BOOT_DIR = $(ISO_DIR)/boot
 GRUB_DIR = $(BOOT_DIR)/grub
 
 C_SOURCES =	$(SRC_DIR)/kernel.c \
-			$(SRC_DIR)/gdt.c \
+			$(SRC_DIR)/cpu/gdt.c \
+			$(SRC_DIR)/drivers/vga.c \
+			$(SRC_DIR)/drivers/terminal.c \
+			$(SRC_DIR)/drivers/screens.c \
+			$(SRC_DIR)/drivers/keyboard.c \
+			$(SRC_DIR)/memory/pmm.c \
 			$(SRC_DIR)/shell/shell.c \
-			$(SRC_DIR)/printk.c \
-			$(SRC_DIR)/pmm.c
+			$(SRC_DIR)/libc/printk.c
 
-ASM_SOURCES =	$(SRC_DIR)/boot.s \
-				$(SRC_DIR)/gdt_flush.s \
-				$(SRC_DIR)/ft_memcpy.s \
-				$(SRC_DIR)/ft_memset.s \
-				$(SRC_DIR)/ft_strlen.s
+ASM_SOURCES =	$(SRC_DIR)/boot/boot.s \
+				$(SRC_DIR)/cpu/gdt_flush.s \
+				$(SRC_DIR)/libc/ft_memcpy.s \
+				$(SRC_DIR)/libc/ft_memset.s \
+				$(SRC_DIR)/libc/ft_strlen.s
 
 ASM_OBJECTS = $(patsubst $(SRC_DIR)/%.s,$(BUILD_DIR)/%.o,$(ASM_SOURCES))
 C_OBJECTS = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(C_SOURCES))

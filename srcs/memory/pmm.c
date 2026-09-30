@@ -6,13 +6,13 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/10 10:07:39 by lumugot           #+#    #+#             */
-/*   Updated: 2026/09/10 10:40:46 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/09/30 16:14:29 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "../includes/pmm.h"
-# include "../includes/kernel.h"
-# include "../includes/bool.h"
+# include "../../includes/pmm.h"
+# include "../../includes/kernel.h"
+# include "../../includes/bool.h"
 
 static void	set_frame(t_pmm *pmm, u32 frame)
 {
