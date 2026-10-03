@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/24 21:05:31 by lumugot           #+#    #+#             */
-/*   Updated: 2026/09/30 16:14:41 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/03 21:44:47 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ int	check_format(va_list args, char c)
 		{
 			char *str = va_arg(args, char *);
 			if (!str)
-				str = ("null");
+				str = "(null)";
 			terminal_write_string(str);
 			value = ft_strlen(str);
 			break ;

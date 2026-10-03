@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/24 20:11:04 by lumugot           #+#    #+#             */
-/*   Updated: 2026/09/30 16:09:32 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/03 21:50:33 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ void	kernel_main(void)
 	screens_init();
 	
 	need_help();
-	print_prompt();
+	display_prompt();
 	
 	keyboard_handler_loop();
 }

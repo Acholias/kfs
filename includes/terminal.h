@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/30 15:54:36 by lumugot           #+#    #+#             */
-/*   Updated: 2026/09/30 18:31:19 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/03 21:49:22 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ void			terminal_putchar(char c);
 void			terminal_write(const char *data, size_t size);
 void			terminal_write_string(const char *data);
 void			clear_line(void);
-void			print_prompt(void);
+void			display_prompt(void);
 t_term_state	terminal_get_state(void);
 void			terminal_set_state(t_term_state state);
 

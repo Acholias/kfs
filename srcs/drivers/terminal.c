@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/30 15:32:50 by lumugot           #+#    #+#             */
-/*   Updated: 2026/09/30 18:48:53 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/03 21:50:37 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ void	terminal_initialize(void)
 		}
 		y++;
 	}
-	print_prompt();
+	display_prompt();
 }
 
 void	terminal_clear_screen(void)
@@ -151,10 +151,10 @@ void	clear_line(void)
 	}
 	term.col = PROMPT_LENGTH;
 	vga_set_cursor(term.row, term.col);
-	print_prompt();
+	display_prompt();
 }
 
-void	print_prompt(void)
+void	display_prompt(void)
 {
 	u8			old_color;
 	size_t		i;

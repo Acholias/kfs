@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/30 15:38:23 by lumugot           #+#    #+#             */
-/*   Updated: 2026/09/30 18:42:51 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/03 21:52:52 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,7 @@ void	keyboard_toggle_layout(void)
 	terminal_set_color(VGA_COLOR_LIGHT_RED2);
 
 	keyboard_reset_input();
-	print_prompt();
+	display_prompt();
 }
 
 static char	scancode_to_char(u8 scancode)
@@ -168,13 +168,13 @@ static void	handle_ctrl_c(void)
 	if (state.row >= VGA_HEIGHT)
 		terminal_scroll();
 	keyboard_reset_input();
-	print_prompt();
+	display_prompt();
 }
 
 static void	handle_ctrl_l(void)
 {
 	terminal_clear_screen();
-	print_prompt();
+	display_prompt();
 	keyboard_reset_input();
 }
 
@@ -183,7 +183,7 @@ static void	handle_enter(void)
 	terminal_putchar('\n');
 	execute_command(kb.input_buffer);
 	keyboard_reset_input();
-	print_prompt();
+	display_prompt();
 }
 
 static void	process_scancode(u8 scancode)
