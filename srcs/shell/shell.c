@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/20 12:13:07 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/03 22:39:57 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/06 12:06:35 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,16 @@
 #include "../../includes/io.h"
 #include "../../includes/gdt.h"
 
-int		ft_strncmp(const char *s1, const char *s2, size_t len)
+static bool	awaiting_color = false;
+
+bool	shell_is_awaiting_color(void)
 {
-	size_t	index = 0;
-	
-	while (index < len && s1[index] && s2[index] && s1[index] == s2[index])
-		index++;
-	if (index == len)
-		return (0);
-	return ((unsigned char)s1[index] - (unsigned char)s2[index]);
+	return (awaiting_color);
+}
+
+void	shell_set_awaiting_color(bool value)
+{
+	awaiting_color = value;
 }
 
 size_t	get_cmd(const char *cmd)
@@ -36,7 +37,9 @@ size_t	get_cmd(const char *cmd)
 
 void	execute_command(const char *cmd)
 {
-	size_t	len;
+	t_term_state	state = terminal_get_state();
+	u8				old_color = state.color;
+	size_t			len;
 
 	if (!cmd || !*cmd)
 		return ;
@@ -61,14 +64,22 @@ void	execute_command(const char *cmd)
 	{
 		terminal_set_color(VGA_COLOR_WHITE);
 		print_gdt();
-		terminal_set_color(VGA_COLOR_LIGHT_RED2);
+		terminal_set_color(old_color);
 	}
 
 	else if (len == 5 && ft_strncmp(cmd, "stack", 5) == 0)
 	{
 		terminal_set_color(VGA_COLOR_WHITE);
 		print_stack();
-		terminal_set_color(VGA_COLOR_LIGHT_RED2);
+		terminal_set_color(old_color);
+	}
+
+	else if (len == 7 && ft_strncmp(cmd, "--color", len) == 0)
+	{
+		if (cmd[len] == ' ')
+			color_command(cmd + len + 1);
+		else
+			display_color_panel();
 	}
 
 	else

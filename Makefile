@@ -21,6 +21,7 @@ C_SOURCES =	$(SRC_DIR)/kernel.c \
 			$(SRC_DIR)/drivers/keyboard.c \
 			$(SRC_DIR)/memory/pmm.c \
 			$(SRC_DIR)/shell/shell.c \
+			$(SRC_DIR)/shell/shell_color.c \
 			$(SRC_DIR)/shell/utils.c \
 			$(SRC_DIR)/libc/printk.c
 

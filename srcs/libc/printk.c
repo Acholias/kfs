@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/24 21:05:31 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/03 21:44:47 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/06 11:52:57 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,48 +35,51 @@ int	putnbr_base(unsigned long num, int base, int uppercase)
 	return (value);
 }
 
-int	check_format(va_list args, char c)
+int	check_format(va_list *args, char c)
 {
-	int	value = 0;
+	char	*str;
+	int		value;
+	int		num;
 
+	value = 0;
 	switch (c)
 	{
 		case 'd':
 		case 'i':
 		{
-			int	num = va_arg(args, int);
+			num = va_arg(*args, int);
 			if (num < 0)
 			{
 				terminal_putchar('-');
 				++value;
 				num = -num;
 			}
-				value += putnbr_base(num, 10, 0);
-				break ;
-		}
-		
-		case 'u':
-			value += putnbr_base(va_arg(args, unsigned int), 10, 0);
+			value += putnbr_base(num, 10, 0);
 			break ;
-		
+		}
+
+		case 'u':
+			value += putnbr_base(va_arg(*args, unsigned int), 10, 0);
+			break ;
+
 		case 'x':
-			value += putnbr_base(va_arg(args, unsigned int), 16, 0);
+			value += putnbr_base(va_arg(*args, unsigned int), 16, 0);
 			break ;
 
 		case 'X':
-			value += putnbr_base(va_arg(args, unsigned int), 16, 1);
+			value += putnbr_base(va_arg(*args, unsigned int), 16, 1);
 			break ;
 
 		case 'p':
 		{
 			terminal_write_string("0x");
-			value = 2 + putnbr_base((unsigned long)va_arg(args, void*), 16, 0);
+			value = 2 + putnbr_base((unsigned long)va_arg(*args, void *), 16, 0);
 			break ;
 		}
 
 		case 's':
 		{
-			char *str = va_arg(args, char *);
+			str = va_arg(*args, char *);
 			if (!str)
 				str = "(null)";
 			terminal_write_string(str);
@@ -85,7 +88,7 @@ int	check_format(va_list args, char c)
 		}
 
 		case 'c':
-			terminal_putchar((char)va_arg(args, int));
+			terminal_putchar((char)va_arg(*args, int));
 			value = 1;
 			break ;
 
@@ -106,19 +109,21 @@ int	check_format(va_list args, char c)
 int	printk(const char *str, ...)
 {
 	va_list	args;
-	int		value = 0;
-	int		index = 0;
+	int		value;
+	int		index;
 
-	va_start(args, str);
+	value = 0;
+	index = 0;
 	if (!str)
 		return (-1);
 
+	va_start(args, str);
 	while (str[index])
 	{
 		if (str[index] == '%' && str[index + 1] != '\0')
 		{
 			++index;
-			value += check_format(args, str[index]);
+			value += check_format(&args, str[index]);
 		}
 		else
 		{

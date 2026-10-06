@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/30 15:38:23 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/03 21:52:52 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/06 12:28:15 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,11 +90,17 @@ const char	*keyboard_get_input_buffer(void)
 
 void	keyboard_toggle_layout(void)
 {
+	t_term_state	state; 
+	u8				old_color;
+
+	state = terminal_get_state();
+	old_color = state.color;
+
 	kb.layout = (kb.layout == LAYOUT_QWERTY) ? LAYOUT_AZERTY : LAYOUT_QWERTY;
 	
 	terminal_set_color(VGA_COLOR_LIGHT_BLUE);
 	printk("\n\n[Keyboard Language] -> %s \n\n", kb.layout == LAYOUT_QWERTY ? "QWERTY" : "AZERTY");
-	terminal_set_color(VGA_COLOR_LIGHT_RED2);
+	terminal_set_color(old_color);
 
 	keyboard_reset_input();
 	display_prompt();
@@ -147,12 +153,12 @@ static void	handle_regular_char(char c)
 static void	handle_ctrl_c(void)
 {
 	t_term_state	state; 
-	u8				old_color;
+	u8				color;
 
 	state = terminal_get_state();
-	old_color = state.color;
+	color = state.color;
 	
-	state.color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);
+	state.color = vga_entry_color(color, VGA_COLOR_BLACK);
 	terminal_set_state(state);
 	terminal_putentry('^', state.color, state.col, state.row);
 	state.col++;
@@ -160,7 +166,7 @@ static void	handle_ctrl_c(void)
 	terminal_putentry('C', state.color, state.col, state.row);
 	
 	state.col++;
-	state.color = old_color;
+	state.color = color;
 	state.col = 0;
 	state.row++;
 	terminal_set_state(state);
@@ -181,7 +187,12 @@ static void	handle_ctrl_l(void)
 static void	handle_enter(void)
 {
 	terminal_putchar('\n');
-	execute_command(kb.input_buffer);
+	
+	if (shell_is_awaiting_color())
+		color_command(kb.input_buffer);
+	else
+		execute_command(kb.input_buffer);
+	
 	keyboard_reset_input();
 	display_prompt();
 }

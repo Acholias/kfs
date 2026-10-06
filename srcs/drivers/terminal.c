@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/30 15:32:50 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/03 21:50:37 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/06 12:27:12 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,15 +54,16 @@ void	terminal_initialize(void)
 void	terminal_clear_screen(void)
 {
 	u16	*buffer;
+	u8	color;
 
+	color = term.color;
 	buffer = vga_buffer_ptr();
 	for (size_t y = 0; y < VGA_HEIGHT; y++)
 		for (size_t x = 0; x < VGA_WIDTH; x++)
-			buffer[y * VGA_WIDTH + x] = vga_entry(' ', term.color);
+			buffer[y * VGA_WIDTH + x] = vga_entry(' ', color);
 
 	term.row = 0;
 	term.col = 0;
-	term.color = vga_entry_color(VGA_COLOR_LIGHT_RED2, VGA_COLOR_BLACK);
 }
 
 void	terminal_set_color(u8 color)
@@ -97,6 +98,7 @@ void	terminal_scroll(void)
 void	terminal_putchar(char c)
 {
 	size_t	max_col;
+	size_t	next_tab;
 
 	if (c == NEWLINE)
 	{
@@ -104,6 +106,16 @@ void	terminal_putchar(char c)
 		term.col = 0;
 		if (term.row >= VGA_HEIGHT)
 			terminal_scroll();
+		vga_set_cursor(term.row, term.col);
+	}
+	else if (c == '\t')
+	{
+		next_tab = ((term.col / 4) + 1) * 4;
+		while (term.col < next_tab && term.col < VGA_WIDTH)
+		{
+			terminal_putentry(' ', term.color, term.col, term.row);
+			term.col++;
+		}
 		vga_set_cursor(term.row, term.col);
 	}
 	else
@@ -121,7 +133,6 @@ void	terminal_putchar(char c)
 		vga_set_cursor(term.row, term.col);
 	}
 }
-
 void	terminal_write(const char *data, size_t size)
 {
 	for (size_t i = 0; i < size; i++)
