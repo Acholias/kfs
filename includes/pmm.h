@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/10 09:58:30 by lumugot           #+#    #+#             */
-/*   Updated: 2026/09/10 10:22:46 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/06 13:11:18 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ u32		pmm_alloc_frame(t_pmm *pmm);
 void	pmm_free_frame(t_pmm *pmm, u32 frame_addr);
 void	pmm_mark_used(t_pmm *pmm, u32 addr, u32 size);
 void	pmm_mark_free(t_pmm *pmm, u32 addr, u32 size);
+u32		pmm_total_frames(t_pmm *pmm);
 void	print_pmm(t_pmm *pmm);
 
 #endif

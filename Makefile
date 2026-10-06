@@ -65,7 +65,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@$(CC) $(CFLAGS) $< -o $@
 
 run: $(ISO)
-	qemu-system-i386 -cdrom $(ISO)
+	qemu-system-i386 -cdrom $(ISO) -d int,cpu_reset -no-reboot -no-shutdown -D qemu.log
 
 fclean:
 	@rm -rf $(BUILD_DIR) $(ISO_DIR) $(ISO)
