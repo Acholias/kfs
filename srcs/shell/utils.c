@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/03 21:55:11 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/06 12:05:33 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/06 12:44:51 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,13 +48,14 @@ void	print_helper(void)
 
 	terminal_set_color(VGA_COLOR_LIGHT_BROWN);
 	printk("Commands:\n");
-	printk("help         - show this message\n");
-	printk("clear        - clear screen\n");
-	printk("reboot       - reboot machine\n");
-	printk("halt         - stop cpu\n");
-	printk("exit         - exit kernel\n");
-	printk("stack        - print stack\n");
-	printk("gdt          - print gdt\n");
+	printk("--help\t\t- show this message\n");
+	printk("--color\t\t- change terminal color\n");
+	printk("clear\t\t- clear screen\n");
+	printk("reboot\t\t- reboot machine\n");
+	printk("halt\t\t- stop cpu\n");
+	printk("exit\t\t- exit kernel\n");
+	printk("stack\t\t- print stack\n");
+	printk("gdt\t\t\t- print gdt\n");
 	terminal_set_color(old_color);
 }
 

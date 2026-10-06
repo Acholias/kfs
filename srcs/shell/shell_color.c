@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/03 21:57:24 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/06 12:10:58 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/06 12:41:29 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,11 @@ void	color_command(const char *num)
 	if (choice < 1 || choice > COLOR_COUNT)
 	{
 		printk("Soliacha: Invalid color number (1-%d)\n", COLOR_COUNT);
+		return ;
+	}
+	if (choice == 1)
+	{
+		printk("Seriously!? You want to make the text the same color as the background ? Are you stupid ??\n");
 		return ;
 	}
 	terminal_set_color(vga_entry_color((enum vga_color)(choice - 1), VGA_COLOR_BLACK));
