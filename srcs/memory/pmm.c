@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/10 10:07:39 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/06 13:10:50 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/09 21:09:55 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,4 +122,11 @@ void	print_pmm(t_pmm *pmm)
 			used++;
 	}
 	printk("[PMM] %d/%d frames used (%d ko libres)\n", used, pmm->total_frames, (pmm->total_frames - used) * FRAME_SIZE / 1024);
+}
+
+t_pmm	*get_pmm(void)
+{
+	static t_pmm	pmm;
+
+	return (&pmm);
 }

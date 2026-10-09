@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/06 13:14:29 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/06 13:35:53 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/09 21:13:41 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,4 +73,11 @@ void	print_paging(t_paging *pg)
 	printk("Directory phys: 0x%x\n", (u32)pg->directory);
 	printk("Tables: %d (identity-mapped 0x0 -> 0x%x)\n",
 		pg->n_tables, pg->n_tables * TABLE_COVERAGE);
+}
+
+t_paging	*get_paging(void)
+{
+	static t_paging	paging;
+
+	return (&paging);
 }

@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/06 13:12:05 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/06 13:15:19 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/09 21:10:35 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,10 @@ typedef struct	s_paging
 	u32	n_tables;
 }	t_paging;
 
-void	paging_init(t_paging *pg, t_pmm *pmm);
-void	paging_enable(t_paging *pg);
-bool	paging_is_enabled(void);
-void	print_paging(t_paging *pg);
+void		paging_init(t_paging *pg, t_pmm *pmm);
+void		paging_enable(t_paging *pg);
+bool		paging_is_enabled(void);
+void		print_paging(t_paging *pg);
+t_paging	*get_paging(void);
 
 #endif
