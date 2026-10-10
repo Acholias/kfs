@@ -6,13 +6,10 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/30 15:40:18 by lumugot           #+#    #+#             */
-/*   Updated: 2026/09/30 16:33:16 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/10 19:38:16 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../includes/screens.h"
-#include "../../includes/terminal.h"
-#include "../../includes/keyboard.h"
 #include "../../includes/kernel.h"
 
 static t_screen	screens[NUM_SCREENS];

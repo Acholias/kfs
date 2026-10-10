@@ -20,16 +20,24 @@ C_SOURCES =	$(SRC_DIR)/kernel.c \
 			$(SRC_DIR)/drivers/screens.c \
 			$(SRC_DIR)/drivers/keyboard.c \
 			$(SRC_DIR)/memory/pmm.c \
+			$(SRC_DIR)/memory/heap.c \
+			$(SRC_DIR)/memory/paging.c \
 			$(SRC_DIR)/shell/shell.c \
 			$(SRC_DIR)/shell/shell_color.c \
 			$(SRC_DIR)/shell/utils.c \
+			$(SRC_DIR)/libc/ft_strlen.c \
+			$(SRC_DIR)/libc/ft_list_new.c \
+			$(SRC_DIR)/libc/ft_list_size.c \
+			$(SRC_DIR)/libc/ft_list_add_back.c \
+			$(SRC_DIR)/libc/ft_list_add_front.c \
+			$(SRC_DIR)/libc/ft_list_delone.c \
+			$(SRC_DIR)/libc/ft_list_clear.c \
+			$(SRC_DIR)/libc/ft_memset.c \
+			$(SRC_DIR)/libc/ft_memcpy.c \
 			$(SRC_DIR)/libc/printk.c
 
 ASM_SOURCES =	$(SRC_DIR)/boot/boot.s \
 				$(SRC_DIR)/cpu/gdt_flush.s \
-				$(SRC_DIR)/libc/ft_memcpy.s \
-				$(SRC_DIR)/libc/ft_memset.s \
-				$(SRC_DIR)/libc/ft_strlen.s
 
 ASM_OBJECTS = $(patsubst $(SRC_DIR)/%.s,$(BUILD_DIR)/%.o,$(ASM_SOURCES))
 C_OBJECTS = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(C_SOURCES))

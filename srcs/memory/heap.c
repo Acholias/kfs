@@ -6,11 +6,12 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 20:29:01 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/09 21:29:43 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/10 20:32:04 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/heap.h"
+#include "../../includes/libc.h"
 
 void	heap_init(t_heap *heap, t_pmm *pmm, u32 start)
 {
