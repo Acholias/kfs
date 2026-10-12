@@ -6,7 +6,7 @@
 ;    By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+         ;
 ;                                                 +#+#+#+#+#+   +#+            ;
 ;    Created: 2026/07/24 21:10:08 by lumugot           #+#    #+#              ;
-;    Updated: 2026/07/24 21:10:10 by lumugot          ###   ########.fr        ;
+;    Updated: 2026/10/12 13:31:23 by lumugot          ###   ########.fr        ;
 ;                                                                              ;
 ; **************************************************************************** ;
 
@@ -36,6 +36,8 @@ section .text
 global _start
 _start:
     mov		esp, stack_top
+	push	ebx
+	push	eax
     call	kernel_main
 	cli
 

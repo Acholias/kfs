@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/20 12:13:07 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/06 12:06:35 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/12 13:35:30 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,19 @@ void	execute_command(const char *cmd)
 			color_command(cmd + len + 1);
 		else
 			display_color_panel();
+	}
+
+	else if (len == 9 && ft_strncmp(cmd, "--memtest", 9) == 0)
+	{
+		t_heap	*heap = get_heap();
+		char	*a = kmalloc(heap, 100);
+		char	*b = kmalloc(heap, 5000);
+
+		printk("a=0x%x (size %d) | b=0x%x (size %d)\n",	(u32)a, ksize(a), (u32)b, ksize(b));
+		print_heap(heap);
+		kfree(heap, a);
+		kfree(heap, b);
+		print_heap(heap);
 	}
 
 	else

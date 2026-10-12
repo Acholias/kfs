@@ -6,12 +6,13 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 20:29:01 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/10 20:32:04 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/12 13:39:50 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/heap.h"
 #include "../../includes/libc.h"
+#include "../../includes/bool.h"
 
 void	heap_init(t_heap *heap, t_pmm *pmm, u32 start)
 {
@@ -26,7 +27,6 @@ void	*kbreak(t_heap *heap, int ict)
 {
 	u32	old_break;
 	u32	new_break;
-	u32	frame;
 
 	old_break = heap->break_addr;
 	new_break = old_break + ict;
@@ -36,8 +36,7 @@ void	*kbreak(t_heap *heap, int ict)
 			return (NULL);
 		while (heap->mapped_end < new_break)
 		{
-			frame = pmm_alloc_frame(heap->pmm);
-			if (frame == 0)
+			if (!pmm_alloc_frame_at(heap->pmm, heap->mapped_end))
 				return (NULL);
 			heap->mapped_end += FRAME_SIZE;
 		}
@@ -86,6 +85,20 @@ static t_block_header	*extend_heap(t_heap *heap, u32 size)
 	return (block);
 }
 
+static void	split_block(t_block_header *block, u32 size)
+{
+	t_block_header	*rest;
+
+	if (block->size < size + sizeof(t_block_header) + MIN_SPLIT)
+		return ;
+	rest = (t_block_header *)((u32)block + sizeof(t_block_header) + size);
+	rest->size = block->size - size - sizeof(t_block_header);
+	rest->free = true;
+	rest->next = block->next;
+	block->size = size;
+	block->next = rest;
+}
+
 void	*kmalloc(t_heap *heap, u32 size)
 {
 	t_block_header	*block;
@@ -95,7 +108,10 @@ void	*kmalloc(t_heap *heap, u32 size)
 
 	block = find_free_block(heap, size);
 	if (block)
+	{
+		split_block(block, size);
 		block->free = false;
+	}
 	else
 		block = extend_heap(heap, size);
 	if (!block)

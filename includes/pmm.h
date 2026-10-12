@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/10 09:58:30 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/09 21:09:16 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/12 13:29:24 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define PMM_H
 
 # include "types.h"
+# include "bool.h"
 # include "multiboot.h"
 
 # define FRAME_SIZE	4096
@@ -27,6 +28,7 @@ typedef struct s_pmm
 
 void	pmm_init(t_pmm *pmm, t_multiboot_info *mbi, u32 kernel_end);
 u32		pmm_alloc_frame(t_pmm *pmm);
+bool	pmm_alloc_frame_at(t_pmm *pmm, u32 addr);
 void	pmm_free_frame(t_pmm *pmm, u32 frame_addr);
 void	pmm_mark_used(t_pmm *pmm, u32 addr, u32 size);
 void	pmm_mark_free(t_pmm *pmm, u32 addr, u32 size);

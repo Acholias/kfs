@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/10 10:07:39 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/09 21:09:55 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/12 13:25:33 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,6 +104,17 @@ u32	pmm_alloc_frame(t_pmm *pmm)
 		}
 	}
 	return (0);
+}
+
+bool	pmm_alloc_frame_at(t_pmm *pmm, u32 addr)
+{
+	u32	f;
+
+	f = addr / FRAME_SIZE;
+	if (f >= pmm->total_frames || test_frame(pmm, f))
+		return (false);
+	set_frame(pmm, f);
+	return (true);
 }
 
 void	pmm_free_frame(t_pmm *pmm, u32 frame_addr)

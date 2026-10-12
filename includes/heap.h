@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 20:29:35 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/10 20:32:05 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/10/12 13:38:45 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,13 +18,14 @@
 # include "pmm.h"
 
 # define HEAP_MAX_GROW (FRAME_SIZE * 256)
+# define MIN_SPLIT	8
 
 typedef struct s_block_header
 {
 	u32						size;
 	bool					free;
 	struct s_block_header	*next;
-}	__attribute__((packed)) t_block_header;
+}	t_block_header;
 
 typedef struct s_heap
 {
@@ -33,7 +34,7 @@ typedef struct s_heap
 	u32				break_addr;
 	u32				mapped_end;
 	t_block_header	*first_block;
-}	__attribute__((packed)) t_heap;
+}	t_heap;
 
 void	heap_init(t_heap *heap, t_pmm *pmm, u32 start);
 void	*kbreak(t_heap *heap, int ict);
