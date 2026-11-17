@@ -15,6 +15,7 @@ GRUB_DIR = $(BOOT_DIR)/grub
 
 C_SOURCES =	$(SRC_DIR)/kernel.c \
 			$(SRC_DIR)/cpu/gdt.c \
+			$(SRC_DIR)/cpu/panic.c \
 			$(SRC_DIR)/drivers/vga.c \
 			$(SRC_DIR)/drivers/terminal.c \
 			$(SRC_DIR)/drivers/screens.c \

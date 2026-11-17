@@ -6,13 +6,14 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/20 12:13:07 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/12 13:35:30 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/11/17 12:41:07 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/kernel.h"
 #include "../../includes/io.h"
 #include "../../includes/gdt.h"
+#include "../../includes/paging.h"
 
 static bool	awaiting_color = false;
 
@@ -82,6 +83,24 @@ void	execute_command(const char *cmd)
 			display_color_panel();
 	}
 
+	else if (len == 5 && ft_strncmp(cmd, "--pmm", 5) == 0)
+		print_pmm(get_pmm());
+
+	else if (len == 8 && ft_strncmp(cmd, "--paging", 8) == 0)
+		print_paging(get_paging());
+
+	else if (len == 6 && ft_strncmp(cmd, "--heap", 6) == 0)
+		print_heap(get_heap());
+
+	else if (len == 7 && ft_strncmp(cmd, "--panic", 7) == 0)
+	{
+		t_heap	*heap = get_heap();
+		char	*a = kmalloc(heap, 16);
+
+		((t_block_header *)a)[-1].size = 0xFFFFFF;
+		kmalloc(heap, 16);
+	}
+
 	else if (len == 9 && ft_strncmp(cmd, "--memtest", 9) == 0)
 	{
 		t_heap	*heap = get_heap();
@@ -93,6 +112,12 @@ void	execute_command(const char *cmd)
 		kfree(heap, a);
 		kfree(heap, b);
 		print_heap(heap);
+	
+		printk("--- tests de protection ---\n");
+		kfree(heap, a);
+		kfree(heap, b);
+		kfree(heap, (void *)0x1234);
+		kfree(heap, NULL);
 	}
 
 	else

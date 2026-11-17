@@ -6,13 +6,14 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 20:29:01 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/12 13:39:50 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/11/17 12:37:27 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/heap.h"
 #include "../../includes/libc.h"
 #include "../../includes/bool.h"
+#include "../../includes/panic.h"
 
 void	heap_init(t_heap *heap, t_pmm *pmm, u32 start)
 {
@@ -99,13 +100,30 @@ static void	split_block(t_block_header *block, u32 size)
 	block->next = rest;
 }
 
+static void	heap_check(t_heap *heap)
+{
+	t_block_header	*cur;
+	u32				end;
+
+	cur = heap->first_block;
+	while (cur)
+	{
+		end = (u32)cur + sizeof(t_block_header) + cur->size;
+		if ((u32)cur < heap->start || end > heap->break_addr)
+			kpanic(PANIC_FATAL, "heap corrupted: block out of bounds");
+		if (cur->next && (u32)cur->next != end)
+			kpanic(PANIC_FATAL, "heap corrupted: broken block chain");
+		cur = cur->next;
+	}
+}
+
 void	*kmalloc(t_heap *heap, u32 size)
 {
 	t_block_header	*block;
 
 	if (size == 0)
 		return (NULL);
-
+	heap_check(heap);
 	block = find_free_block(heap, size);
 	if (block)
 	{
@@ -138,13 +156,40 @@ static void	coalesce(t_heap *heap)
 	}
 }
 
+static t_block_header	*find_block(t_heap *heap, void *ptr)
+{
+	t_block_header	*cur;
+
+	cur = heap->first_block;
+	while (cur)
+	{
+		if ((u32)cur + sizeof(t_block_header) == (u32)ptr)
+			return (cur);
+		cur = cur->next;
+	}
+	return (NULL);
+}
+
 void	kfree(t_heap *heap, void *ptr)
 {
 	t_block_header	*block;
 
 	if (!ptr)
 		return ;
-	block = (t_block_header *)((u32)ptr - sizeof(t_block_header));
+	heap_check(heap);
+	block = find_block(heap, ptr);
+	if (!block)
+	{
+		printk("  ptr: 0x%x\n", (u32)ptr);
+		kpanic(PANIC_WARNING, "kfree: invalid pointer");
+		return ;
+	}
+	if (block->free)
+	{
+		printk("  ptr: 0x%x\n", (u32)ptr);
+		kpanic(PANIC_WARNING, "kfree: double free");
+		return ;
+	}
 	block->free = true;
 	coalesce(heap);
 }
