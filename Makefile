@@ -23,6 +23,7 @@ C_SOURCES =	$(SRC_DIR)/kernel.c \
 			$(SRC_DIR)/memory/pmm.c \
 			$(SRC_DIR)/memory/heap.c \
 			$(SRC_DIR)/memory/paging.c \
+			$(SRC_DIR)/memory/vmalloc.c \
 			$(SRC_DIR)/shell/shell.c \
 			$(SRC_DIR)/shell/shell_color.c \
 			$(SRC_DIR)/shell/utils.c \
@@ -45,7 +46,7 @@ C_OBJECTS = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(C_SOURCES))
 OBJECTS = $(ASM_OBJECTS) $(C_OBJECTS)
 
 KERNEL = $(BUILD_DIR)/kernel.bin
-ISO = kfs-2.iso
+ISO = kfs-3.iso
 
 all: $(ISO)
 
@@ -53,7 +54,7 @@ $(ISO): $(KERNEL)
 	@mkdir -p $(GRUB_DIR)
 	@cp $(KERNEL) $(BOOT_DIR)/kernel.bin
 	@echo '' >> $(GRUB_DIR)/grub.cfg
-	@echo 'menuentry "KFS-2" {' >> $(GRUB_DIR)/grub.cfg
+	@echo 'menuentry "KFS" {' >> $(GRUB_DIR)/grub.cfg
 	@echo '	multiboot /boot/kernel.bin' >> $(GRUB_DIR)/grub.cfg
 	@echo '	boot' >> $(GRUB_DIR)/grub.cfg
 	@echo '}' >> $(GRUB_DIR)/grub.cfg
@@ -74,12 +75,21 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@$(CC) $(CFLAGS) $< -o $@
 
 run: $(ISO)
+	qemu-system-i386 -cdrom $(ISO)
+
+debug: $(ISO)
 	qemu-system-i386 -cdrom $(ISO) -d int,cpu_reset -no-reboot -no-shutdown -D qemu.log
 
 fclean:
 	@rm -rf $(BUILD_DIR) $(ISO_DIR) $(ISO)
 	@echo -e "\033[31mFiles and folder : $(BUILD_DIR) $(ISO_DIR) $(ISO) deleted\033[0m"
 
+purge:
+	@rm -rf $(BUILD_DIR) $(ISO_DIR) $(ISO)
+	@rm -rf qemu.log
+	@echo -e "\033[31mFiles and folder : $(BUILD_DIR) $(ISO_DIR) $(ISO) qemu.log deleted\033[0m"
+
+
 re: fclean all
 
-.PHONY: all fclean re run
+.PHONY: all fclean re run purge debug

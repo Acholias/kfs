@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 20:29:01 by lumugot           #+#    #+#             */
-/*   Updated: 2026/11/17 12:37:27 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/11/18 11:30:24 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,43 @@
 #include "../../includes/libc.h"
 #include "../../includes/bool.h"
 #include "../../includes/panic.h"
+#include "../../includes/paging.h"
 
 void	heap_init(t_heap *heap, t_pmm *pmm, u32 start)
 {
 	heap->pmm = pmm;
+	heap->paging = NULL;
 	heap->start = start;
 	heap->break_addr = start;
 	heap->mapped_end = start;
+	heap->limit = 0xFFFFFFFF;
+	heap->is_virtual = false;
 	heap->first_block = NULL;
+}
+
+void	heap_init_virtual(t_heap *heap, t_pmm *pmm, t_paging *pg, u32 start, u32 limit)
+{
+	heap_init(heap, pmm, start);
+	heap->is_virtual = true;
+	heap->paging = pg;
+	heap->limit = limit;
+}
+
+static bool	heap_grow_page(t_heap *heap)
+{
+	u32	frame;
+
+	if (!heap->is_virtual)
+		return (pmm_alloc_frame_at(heap->pmm, heap->mapped_end));
+	frame = pmm_alloc_frame(heap->pmm);
+	if (frame == 0)
+		return (false);
+	if (paging_map(heap->paging, heap->pmm, heap->mapped_end, frame, PAGE_RW) != 0)
+	{
+		pmm_free_frame(heap->pmm, frame);
+		return (false);
+	}
+	return (true);
 }
 
 void	*kbreak(t_heap *heap, int ict)
@@ -33,11 +62,12 @@ void	*kbreak(t_heap *heap, int ict)
 	new_break = old_break + ict;
 	if (ict > 0)
 	{
-		if ((u32)ict > HEAP_MAX_GROW)
+		if ((u32)ict > HEAP_MAX_GROW || new_break < old_break
+			|| new_break > heap->limit)
 			return (NULL);
 		while (heap->mapped_end < new_break)
 		{
-			if (!pmm_alloc_frame_at(heap->pmm, heap->mapped_end))
+			if (!heap_grow_page(heap))
 				return (NULL);
 			heap->mapped_end += FRAME_SIZE;
 		}
@@ -234,4 +264,11 @@ t_heap	*get_heap(void)
 	static	t_heap	heap;
 
 	return (&heap);
+}
+
+t_heap	*get_vheap(void)
+{
+	static t_heap	vheap;
+
+	return (&vheap);
 }

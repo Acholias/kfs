@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/20 12:13:07 by lumugot           #+#    #+#             */
-/*   Updated: 2026/11/17 12:41:07 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/11/18 11:29:52 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 #include "../../includes/io.h"
 #include "../../includes/gdt.h"
 #include "../../includes/paging.h"
+#include "../../includes/vmalloc.h"
+#include "../../includes/memlayout.h"
 
 static bool	awaiting_color = false;
 
@@ -118,6 +120,50 @@ void	execute_command(const char *cmd)
 		kfree(heap, b);
 		kfree(heap, (void *)0x1234);
 		kfree(heap, NULL);
+	}
+
+	else if (len == 8 && ft_strncmp(cmd, "--vmtest", 8) == 0)
+	{
+		t_heap		*vheap = get_vheap();
+		t_paging	*pg = get_paging();
+		u32			page;
+		u32			stray;
+		char		*a;
+		char		*b;
+
+		a = vmalloc(vheap, 4000);
+		stray = pmm_alloc_frame(get_pmm());
+		b = vmalloc(vheap, 5000);
+		printk("a=0x%x (size %d) | b=0x%x (size %d)\n",
+			(u32)a, vsize(a), (u32)b, vsize(b));
+		page = vheap->start;
+		while (page < vheap->mapped_end)
+		{
+			print_page_info(pg, page);
+			page += FRAME_SIZE;
+		}
+		vfree(vheap, a);
+		vfree(vheap, b);
+		pmm_free_frame(get_pmm(), stray);
+		print_heap(vheap);
+	}
+
+	else if (len == 8 && ft_strncmp(cmd, "--spaces", 8) == 0)
+	{
+		t_paging	*pg = get_paging();
+		t_pmm		*pmm = get_pmm();
+		u32			frame = pmm_alloc_frame(pmm);
+
+		printk("kernel 0x%x-0x%x | user 0x%x-0x%x | vmalloc 0x%x-0x%x\n",
+			KERNEL_SPACE_START, KERNEL_SPACE_END, USER_SPACE_START,
+			USER_SPACE_END, VMALLOC_START, VMALLOC_END);
+		print_page_info(pg, 0x1000000);
+		print_page_info(pg, USER_SPACE_START);
+		paging_map(pg, pmm, USER_SPACE_START, frame, PAGE_RW);
+		print_page_info(pg, USER_SPACE_START);
+		paging_unmap(pg, USER_SPACE_START);
+		pmm_free_frame(pmm, frame);
+		print_page_info(pg, USER_SPACE_START);
 	}
 
 	else

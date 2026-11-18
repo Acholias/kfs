@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/24 20:11:04 by lumugot           #+#    #+#             */
-/*   Updated: 2026/11/17 12:18:44 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/11/18 11:04:34 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "../includes/pmm.h"
 #include "../includes/paging.h"
 #include "../includes/heap.h"
+#include "../includes/memlayout.h"
 
 void	need_help(void)
 {
@@ -44,6 +45,9 @@ void	kernel_main(u32 magic, t_multiboot_info *mbi)
 
 	heap_init(get_heap(), pmm, HEAP_START);
 	printk("[Heap] Initialized at 0x%x\n", HEAP_START);
+
+	heap_init_virtual(get_vheap(), pmm, get_paging(), VMALLOC_START, VMALLOC_END);
+	printk("[VHeap] Initialized at 0x%x\n", VMALLOC_START);
 
 	display_prompt();
 	keyboard_handler_loop();

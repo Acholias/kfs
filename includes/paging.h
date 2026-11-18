@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/06 13:12:05 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/09 21:10:35 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/11/18 11:06:21 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,5 +36,10 @@ void		paging_enable(t_paging *pg);
 bool		paging_is_enabled(void);
 void		print_paging(t_paging *pg);
 t_paging	*get_paging(void);
+
+int		paging_map(t_paging *pg, t_pmm *pmm, u32 virt, u32 phys, u32 flags);
+int		paging_unmap(t_paging *pg, u32 virt);
+bool	paging_get_page(t_paging *pg, u32 virt, u32 *phys, u32 *flags);
+void	print_page_info(t_paging *pg, u32 virt);
 
 #endif
