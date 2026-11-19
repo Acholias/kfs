@@ -6,11 +6,11 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/10 20:26:00 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/10 20:28:23 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/11/19 09:22:34 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../includes/libc.h"
+#include "../../includes/libk.h"
 
 void	list_clear(t_heap *heap, t_list **list, t_del_fn del)
 {

@@ -6,7 +6,7 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/24 21:10:49 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/12 13:33:10 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/11/19 09:21:09 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 # include "screens.h"
 # include "keyboard.h"
 # include "shell.h"
-# include "libc.h"
+# include "libk.h"
 
 #if defined(__LINUX__)
 #error "You are not using a cross-compiler, you will most certainly run into trouble"

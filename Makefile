@@ -27,16 +27,16 @@ C_SOURCES =	$(SRC_DIR)/kernel.c \
 			$(SRC_DIR)/shell/shell.c \
 			$(SRC_DIR)/shell/shell_color.c \
 			$(SRC_DIR)/shell/utils.c \
-			$(SRC_DIR)/libc/ft_strlen.c \
-			$(SRC_DIR)/libc/ft_list_new.c \
-			$(SRC_DIR)/libc/ft_list_size.c \
-			$(SRC_DIR)/libc/ft_list_add_back.c \
-			$(SRC_DIR)/libc/ft_list_add_front.c \
-			$(SRC_DIR)/libc/ft_list_delone.c \
-			$(SRC_DIR)/libc/ft_list_clear.c \
-			$(SRC_DIR)/libc/ft_memset.c \
-			$(SRC_DIR)/libc/ft_memcpy.c \
-			$(SRC_DIR)/libc/printk.c
+			$(SRC_DIR)/libk/ft_strlen.c \
+			$(SRC_DIR)/libk/ft_list_new.c \
+			$(SRC_DIR)/libk/ft_list_size.c \
+			$(SRC_DIR)/libk/ft_list_add_back.c \
+			$(SRC_DIR)/libk/ft_list_add_front.c \
+			$(SRC_DIR)/libk/ft_list_delone.c \
+			$(SRC_DIR)/libk/ft_list_clear.c \
+			$(SRC_DIR)/libk/ft_memset.c \
+			$(SRC_DIR)/libk/ft_memcpy.c \
+			$(SRC_DIR)/libk/printk.c
 
 ASM_SOURCES =	$(SRC_DIR)/boot/boot.s \
 				$(SRC_DIR)/cpu/gdt_flush.s \

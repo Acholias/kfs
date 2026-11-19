@@ -1,30 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_list_add_back.c                                 :+:      :+:    :+:   */
+/*   ft_list_new.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/10/10 20:15:31 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/10 20:19:14 by lumugot          ###   ########.fr       */
+/*   Created: 2026/10/10 20:02:25 by lumugot           #+#    #+#             */
+/*   Updated: 2026/11/19 09:22:40 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../includes/libc.h"
+#include "../../includes/libk.h"
 
-void	ft_list_add_back(t_list **list, t_list *node)
+t_list	*ft_list_new(t_heap *heap, void *content)
 {
-	t_list	*temp;
+	t_list	*node;
 
-	if (!list)
-		return ;
-	if (!*list)
-	{
-		*list = node;
-		return ;
-	}
-	temp = *list;
-	while (temp->next)
-		temp = temp->next;
-	temp->next = node;
+	node = kmalloc(heap, sizeof(t_list));
+	if (!node)
+		return (NULL);
+	node->content = content;
+	node->next = NULL;
+	return (node);
 }

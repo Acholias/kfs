@@ -1,22 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_list_delone.c                                   :+:      :+:    :+:   */
+/*   ft_list_size.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/10/10 20:19:33 by lumugot           #+#    #+#             */
-/*   Updated: 2026/10/10 20:25:56 by lumugot          ###   ########.fr       */
+/*   Created: 2026/10/10 20:09:05 by lumugot           #+#    #+#             */
+/*   Updated: 2026/11/19 09:22:41 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../includes/libc.h"
+#include "../../includes/libk.h"
 
-void	ft_list_delone(t_heap *heap, t_list *node, t_del_fn del)
+int	ft_list_size(t_list *list)
 {
-	if (!node)
-		return ;
-	if (del)
-		del(heap, node->content);
-	kfree(heap, node);
+	int size;
+
+	size = 0;
+	while (list)
+	{
+		size++;
+		list = list->next;
+	}
+	return (size);
 }

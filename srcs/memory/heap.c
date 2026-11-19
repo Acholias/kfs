@@ -6,12 +6,12 @@
 /*   By: lumugot <lumugot@42angouleme.fr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 20:29:01 by lumugot           #+#    #+#             */
-/*   Updated: 2026/11/18 11:30:24 by lumugot          ###   ########.fr       */
+/*   Updated: 2026/11/19 09:23:30 by lumugot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/heap.h"
-#include "../../includes/libc.h"
+#include "../../includes/libk.h"
 #include "../../includes/bool.h"
 #include "../../includes/panic.h"
 #include "../../includes/paging.h"
